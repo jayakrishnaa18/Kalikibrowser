@@ -152,6 +152,15 @@ class MainActivity : AppCompatActivity() {
                 .build())
             .build()
         runtime = GeckoRuntime.create(this, settings)
+
+        // Load ad blocker WebExtension
+        runtime.webExtensionController.ensureBuiltIn(
+            "resource://android/assets/extensions/adblocker/",
+            "adblocker@kaliki.browser"
+        ).accept(
+            { ext -> android.util.Log.d("Kaliki", "Ad blocker extension loaded: ${ext?.id}") },
+            { e -> android.util.Log.e("Kaliki", "Extension failed to load: $e") }
+        )
     }
 
     private fun initViews() {
@@ -194,6 +203,7 @@ class MainActivity : AppCompatActivity() {
         btnBack.setOnClickListener { goBack() }
         btnForward.setOnClickListener { goForward() }
         btnHome.setOnClickListener { showNewTabPage() }
+        findViewById<ImageButton>(R.id.btn_new_tab).setOnClickListener { createNewTab(null) }
         btnTabs.setOnClickListener { showTabSwitcher() }
         btnMenuBottom.setOnClickListener { showMainMenu() }
         swipeRefresh.isEnabled = false
