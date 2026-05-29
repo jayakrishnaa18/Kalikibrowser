@@ -13,3 +13,5 @@ local.properties
 *.apk
 releases/
 node_modules/
+app/build/
+gh_*/

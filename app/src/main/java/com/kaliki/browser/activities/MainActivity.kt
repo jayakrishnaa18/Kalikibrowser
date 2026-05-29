@@ -166,6 +166,10 @@ class MainActivity : AppCompatActivity() {
         btnHome = findViewById(R.id.btn_home)
         btnTabs = findViewById(R.id.btn_tabs)
         btnMenuBottom = findViewById(R.id.btn_menu_bottom)
+        // Shield and refresh
+        findViewById<ImageButton>(R.id.shield_icon).setOnClickListener { showShieldInfo() }
+        findViewById<ImageButton>(R.id.btn_refresh).setOnClickListener { tabManager.currentTab()?.session?.reload() }
+        findViewById<ImageButton>(R.id.btn_menu).setOnClickListener { showMainMenu() }
     }
 
     private fun setupListeners() {
@@ -477,6 +481,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Track blocked content for shield badge
+        session.contentBlockingDelegate = object : ContentBlocking.Delegate {
+            override fun onContentBlocked(session: GeckoSession, event: ContentBlocking.BlockEvent) {
+                blockedCount++
+                sessionBlocked++
+                adBlocker.incrementBlocked()
+                runOnUiThread {
+                    findViewById<TextView>(R.id.blocked_count)?.text =
+                        if (blockedCount > 999) "999+" else blockedCount.toString()
+                }
+            }
+        }
+
         return session
     }
 
@@ -600,11 +617,17 @@ class MainActivity : AppCompatActivity() {
 
         val currentTab = tabManager.currentTab()
         if (currentTab != null && currentTab.isOnNtp) {
+            // Fresh session — no leftover content from previous page
+            geckoView.releaseSession()
+            currentTab.session.close()
+            val freshSession = createGeckoSession()
+            currentTab.session = freshSession
             currentTab.url = url
             currentTab.title = "Loading..."
             currentTab.isOnNtp = false
-            showGeckoSession(currentTab.session)
-            currentTab.session.loadUri(url)
+            geckoView.setSession(freshSession)
+            freshSession.loadUri(url)
+            newTabPage.visibility = View.GONE
         } else if (currentTab != null) {
             currentTab.url = url
             currentTab.isOnNtp = false
