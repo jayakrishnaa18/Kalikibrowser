@@ -789,13 +789,8 @@ class MainActivity : AppCompatActivity() {
         val view = layoutInflater.inflate(R.layout.bottom_sheet_menu, null)
         dialog.setContentView(view)
 
-        // Quick row
-        view.findViewById<LinearLayout>(R.id.menu_new_tab).setOnClickListener { createNewTab(null); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_incognito_top).setOnClickListener { toggleIncognito(); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_add_bookmark).setOnClickListener { addBookmark(); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
-
         // List items
+        view.findViewById<LinearLayout>(R.id.menu_new_tab).setOnClickListener { createNewTab(null); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_bookmarks).setOnClickListener { showBookmarks(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_history).setOnClickListener { showHistory(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_downloads).setOnClickListener { showDownloads(); dialog.dismiss() }
