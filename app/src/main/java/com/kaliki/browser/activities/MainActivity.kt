@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         initManagers()
         initGeckoRuntime()
+        requestNotificationPermission()
         initViews()
         setupListeners()
         blockedCount = adBlocker.getBlockedTotal()
@@ -494,7 +495,70 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Handle permission requests from websites (camera, mic, location, notifications)
+        session.permissionDelegate = object : GeckoSession.PermissionDelegate {
+            override fun onAndroidPermissionsRequest(session: GeckoSession, permissions: Array<out String>?, callback: GeckoSession.PermissionDelegate.Callback) {
+                if (permissions == null) { callback.reject(); return }
+                // Request Android runtime permissions
+                pendingPermissionCallback = callback
+                pendingPermissions = permissions
+                androidx.core.app.ActivityCompat.requestPermissions(this@MainActivity, permissions, PERMISSION_REQUEST_CODE)
+            }
+
+            override fun onContentPermissionRequest(session: GeckoSession, perm: GeckoSession.PermissionDelegate.ContentPermission): GeckoResult<Int>? {
+                // Auto-allow notifications, ask for geolocation
+                return when (perm.permission) {
+                    GeckoSession.PermissionDelegate.PERMISSION_DESKTOP_NOTIFICATION -> {
+                        GeckoResult.fromValue(GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW)
+                    }
+                    GeckoSession.PermissionDelegate.PERMISSION_GEOLOCATION -> {
+                        GeckoResult.fromValue(GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW)
+                    }
+                    else -> {
+                        GeckoResult.fromValue(GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW)
+                    }
+                }
+            }
+
+            override fun onMediaPermissionRequest(session: GeckoSession, uri: String, video: Array<out GeckoSession.PermissionDelegate.MediaSource>?, audio: Array<out GeckoSession.PermissionDelegate.MediaSource>?, callback: GeckoSession.PermissionDelegate.MediaCallback) {
+                // Allow media access (camera/mic for video calls, etc.)
+                val videoSource = video?.firstOrNull()
+                val audioSource = audio?.firstOrNull()
+                callback.grant(videoSource, audioSource)
+            }
+        }
+
         return session
+    }
+
+    // Request notification permission on Android 13+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 2001)
+            }
+        }
+    }
+
+    // Permission handling
+    private var pendingPermissionCallback: GeckoSession.PermissionDelegate.Callback? = null
+    private var pendingPermissions: Array<out String>? = null
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED }) {
+                pendingPermissionCallback?.grant()
+            } else {
+                pendingPermissionCallback?.reject()
+            }
+            pendingPermissionCallback = null
+            pendingPermissions = null
+        }
+    }
+
+    companion object {
+        const val PERMISSION_REQUEST_CODE = 1001
     }
 
     private fun findTabBySession(session: GeckoSession): BrowserTab? {
