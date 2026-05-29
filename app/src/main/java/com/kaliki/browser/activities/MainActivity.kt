@@ -681,17 +681,11 @@ class MainActivity : AppCompatActivity() {
 
         val currentTab = tabManager.currentTab()
         if (currentTab != null && currentTab.isOnNtp) {
-            // Fresh session — no leftover content from previous page
-            geckoView.releaseSession()
-            currentTab.session.close()
-            val freshSession = createGeckoSession()
-            currentTab.session = freshSession
+            // Reconnect session to view and load
             currentTab.url = url
             currentTab.title = "Loading..."
-            currentTab.isOnNtp = false
-            geckoView.setSession(freshSession)
-            freshSession.loadUri(url)
-            newTabPage.visibility = View.GONE
+            showGeckoSession(currentTab.session)
+            currentTab.session.loadUri(url)
         } else if (currentTab != null) {
             currentTab.url = url
             currentTab.isOnNtp = false
