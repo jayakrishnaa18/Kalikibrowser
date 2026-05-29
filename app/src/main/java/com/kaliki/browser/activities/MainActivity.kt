@@ -53,13 +53,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var ntpSearch: EditText
     private lateinit var btnBack: ImageButton
     private lateinit var btnForward: ImageButton
-    private lateinit var btnRefresh: ImageButton
     private lateinit var btnHome: ImageButton
     private lateinit var btnTabs: TextView
-    private lateinit var btnMenu: ImageButton
     private lateinit var btnMenuBottom: ImageButton
-    private lateinit var shieldIcon: ImageButton
-    private lateinit var blockedCountText: TextView
 
     private lateinit var runtime: GeckoRuntime
 
@@ -142,9 +138,16 @@ class MainActivity : AppCompatActivity() {
             .javaScriptEnabled(true)
             .webManifest(true)
             .contentBlocking(ContentBlocking.Settings.Builder()
-                .antiTracking(ContentBlocking.AntiTracking.DEFAULT or ContentBlocking.AntiTracking.CRYPTOMINING)
+                .antiTracking(
+                    ContentBlocking.AntiTracking.DEFAULT or
+                    ContentBlocking.AntiTracking.CRYPTOMINING or
+                    ContentBlocking.AntiTracking.FINGERPRINTING or
+                    ContentBlocking.AntiTracking.CONTENT
+                )
                 .safeBrowsing(ContentBlocking.SafeBrowsing.DEFAULT)
                 .enhancedTrackingProtectionLevel(ContentBlocking.EtpLevel.STRICT)
+                .cookieBehavior(ContentBlocking.CookieBehavior.ACCEPT_NON_TRACKERS)
+                .cookieBehaviorPrivateMode(ContentBlocking.CookieBehavior.ACCEPT_NON_TRACKERS)
                 .build())
             .build()
         runtime = GeckoRuntime.create(this, settings)
@@ -160,13 +163,9 @@ class MainActivity : AppCompatActivity() {
         ntpSearch = findViewById(R.id.ntp_search)
         btnBack = findViewById(R.id.btn_back)
         btnForward = findViewById(R.id.btn_forward)
-        btnRefresh = findViewById(R.id.btn_refresh)
         btnHome = findViewById(R.id.btn_home)
         btnTabs = findViewById(R.id.btn_tabs)
-        btnMenu = findViewById(R.id.btn_menu)
         btnMenuBottom = findViewById(R.id.btn_menu_bottom)
-        shieldIcon = findViewById(R.id.shield_icon)
-        blockedCountText = findViewById(R.id.blocked_count)
     }
 
     private fun setupListeners() {
@@ -189,13 +188,9 @@ class MainActivity : AppCompatActivity() {
         urlEditText.setOnFocusChangeListener { _, hasFocus -> if (hasFocus) urlEditText.selectAll() }
         btnBack.setOnClickListener { goBack() }
         btnForward.setOnClickListener { goForward() }
-        btnRefresh.setOnClickListener { reload() }
         btnHome.setOnClickListener { showNewTabPage() }
-        findViewById<ImageButton>(R.id.btn_new_tab).setOnClickListener { createNewTab(null) }
         btnTabs.setOnClickListener { showTabSwitcher() }
-        btnMenu.setOnClickListener { showMainMenu() }
         btnMenuBottom.setOnClickListener { showMainMenu() }
-        shieldIcon.setOnClickListener { showShieldInfo() }
         swipeRefresh.isEnabled = false
         swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.accent))
         setupShortcuts()
@@ -431,6 +426,15 @@ class MainActivity : AppCompatActivity() {
                 if (!isIncognito && tab != null && tab.url != null && !tab.url!!.startsWith("about:")) {
                     historyManager.addEntry(tab.title, tab.url!!)
                 }
+                // Inject YouTube ad-skip and background playback scripts
+                val url = tab?.url ?: ""
+                if (url.contains("youtube.com") || url.contains("youtu.be")) {
+                    injectYouTubeScripts(session)
+                }
+                // Inject general ad-block CSS on all pages
+                if (prefsManager.isAdBlockEnabled() && url.isNotEmpty() && !url.startsWith("about:")) {
+                    injectGeneralAdBlock(session)
+                }
             }
 
             override fun onProgressChange(session: GeckoSession, progress: Int) {
@@ -478,6 +482,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun findTabBySession(session: GeckoSession): BrowserTab? {
         return tabManager.tabs.find { it.session == session }
+    }
+
+    private fun injectYouTubeScripts(session: GeckoSession) {
+        // Inject background playback script (overrides visibility API)
+        val bgScript = adBlocker.getYouTubeBackgroundScript()
+        session.loadUri("javascript:void(${Uri.encode(bgScript)})")
+        // Inject ad-skip script (fast-forwards ads + clicks skip)
+        val adScript = adBlocker.getYouTubeAdBlockScript()
+        session.loadUri("javascript:void(${Uri.encode(adScript)})")
+    }
+
+    private fun injectGeneralAdBlock(session: GeckoSession) {
+        val script = adBlocker.getGeneralAdBlockScript()
+        session.loadUri("javascript:void(${Uri.encode(script)})")
     }
 
     // =================== TAB MANAGEMENT ===================
@@ -680,27 +698,23 @@ class MainActivity : AppCompatActivity() {
         val view = layoutInflater.inflate(R.layout.bottom_sheet_menu, null)
         dialog.setContentView(view)
 
+        // Quick row
         view.findViewById<LinearLayout>(R.id.menu_new_tab).setOnClickListener { createNewTab(null); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_incognito_top).setOnClickListener { toggleIncognito(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_add_bookmark).setOnClickListener { addBookmark(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
 
+        // List items (Chrome mobile order)
         view.findViewById<LinearLayout>(R.id.menu_bookmarks).setOnClickListener { showBookmarks(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_history).setOnClickListener { showHistory(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_downloads).setOnClickListener { showDownloads(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_find).setOnClickListener { showFindInPage(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_desktop).setOnClickListener { toggleDesktopMode(); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_incognito_toggle).setOnClickListener { toggleIncognito(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_reader).setOnClickListener { showToast("Reader mode not available in GeckoView"); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_print).setOnClickListener { showToast("Print not available in GeckoView"); dialog.dismiss() }
+        view.findViewById<LinearLayout>(R.id.menu_translate).setOnClickListener { translatePage(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_add_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_translate)?.setOnClickListener { translatePage(); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_qr_code)?.setOnClickListener { showQrCode(); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_screenshot)?.setOnClickListener { screenshotPage(); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_video_download)?.setOnClickListener { showToast("Use long-press on video to download"); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_settings).setOnClickListener { openSettings(); dialog.dismiss() }
-
-        view.findViewById<TextView>(R.id.menu_incognito_state).text = if (isIncognito) "ON" else "OFF"
 
         dialog.show()
     }
@@ -708,7 +722,9 @@ class MainActivity : AppCompatActivity() {
     private fun showTabSwitcher() {
         captureTabThumbnail()
         val dialog = BottomSheetDialog(this, R.style.BottomSheetTheme)
-        dialog.behavior.peekHeight = (resources.displayMetrics.heightPixels * 0.85).toInt()
+        dialog.behavior.peekHeight = resources.displayMetrics.heightPixels
+        dialog.behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+        dialog.behavior.skipCollapsed = true
         val view = layoutInflater.inflate(R.layout.bottom_sheet_tabs, null); dialog.setContentView(view)
         view.findViewById<TextView>(R.id.tabs_count_label).text = "${tabManager.tabs.size} Tabs"
         view.findViewById<RecyclerView>(R.id.tabs_recycler).apply {
@@ -940,7 +956,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateBlockedCount() {
-        blockedCountText.text = if (blockedCount > 999) "999+" else blockedCount.toString()
         findViewById<TextView>(R.id.stat_blocked)?.text = blockedCount.toString()
     }
 
@@ -1104,16 +1119,22 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // GeckoView sessions stay active — good for background audio
+        // Session is active when visible
+        tabManager.currentTab()?.session?.setActive(true)
     }
 
     override fun onPause() {
-        // DON'T suspend sessions — allows YouTube/music to keep playing in background
         super.onPause()
+        // Keep session active for YouTube background playback
+        // setActive(true) tells GeckoView to keep processing audio even when not visible
+        tabManager.currentTab()?.session?.setActive(true)
+        requestAudioFocus()
     }
 
     override fun onStop() {
         super.onStop()
+        // Keep session active — do NOT close or suspend sessions
+        tabManager.currentTab()?.session?.setActive(true)
         val tabData = tabManager.tabs
             .filter { !it.isOnNtp && it.url != null }
             .map { mapOf("url" to it.url!!, "title" to it.title) }
