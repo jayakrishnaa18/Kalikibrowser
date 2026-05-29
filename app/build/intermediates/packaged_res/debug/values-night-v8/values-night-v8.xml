@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent">#8AB4F8</color>
+    <color name="accent_dark">#4285F4</color>
+    <color name="accent_light">#1D3557</color>
+    <color name="bg_hover">#3C4043</color>
+    <color name="bg_primary">#202124</color>
+    <color name="bg_secondary">#292A2D</color>
+    <color name="bg_tertiary">#35363A</color>
+    <color name="border">#3C4043</color>
+    <color name="card_bg">#292A2D</color>
+    <color name="danger">#F28B82</color>
+    <color name="shield_green">#81C995</color>
+    <color name="success">#81C995</color>
+    <color name="text_hint">#5F6368</color>
+    <color name="text_primary">#E8EAED</color>
+    <color name="text_secondary">#9AA0A6</color>
+    <color name="toolbar_bg">#292A2D</color>
+    <color name="url_bar_bg">#35363A</color>
+    <color name="white">#FFFFFF</color>
+</resources>

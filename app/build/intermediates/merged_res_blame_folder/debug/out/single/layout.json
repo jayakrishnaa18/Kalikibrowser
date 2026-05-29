@@ -1,0 +1,58 @@
+[
+    {
+        "merged": "com.kaliki.browser.app-mergeDebugResources-55:/layout/activity_main.xml",
+        "source": "com.kaliki.browser.app-main-58:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/item_news.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/item_news.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/activity_settings.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/activity_settings.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/item_list_entry.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/item_list_entry.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/bottom_sheet_context_menu.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/bottom_sheet_context_menu.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/bottom_sheet_shield.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/bottom_sheet_shield.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/item_native_ad.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/item_native_ad.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/bottom_sheet_menu.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/bottom_sheet_menu.xml"
+    },
+    {
+        "merged": "com.kaliki.browser.app-mergeDebugResources-55:/layout/item_news.xml",
+        "source": "com.kaliki.browser.app-main-58:/layout/item_news.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/item_tab.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/item_tab.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/bottom_sheet_list.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/bottom_sheet_list.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/activity_main.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/bottom_sheet_tabs.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/bottom_sheet_tabs.xml"
+    },
+    {
+        "merged": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-mergeDebugResources-55:/layout/item_shortcut.xml",
+        "source": "/home/kalikijk/.gradle/daemon/8.5/com.kaliki.browser.app-main-58:/layout/item_shortcut.xml"
+    }
+]

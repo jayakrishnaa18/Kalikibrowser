@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/bg_primary"
+    android:paddingTop="12dp"
+    android:paddingBottom="16dp">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center"
+        android:background="@drawable/handle_bg"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="20dp"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Tabs"
+            android:textSize="20sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_close_all"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Close All"
+            android:textSize="12sp"
+            android:textColor="@color/danger"
+            android:backgroundTint="@color/bg_tertiary"
+            android:layout_marginEnd="8dp"
+            style="@style/Widget.MaterialComponents.Button.TextButton" />
+
+        <Button
+            android:id="@+id/btn_new_tab"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="+ New Tab"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/accent" />
+    </LinearLayout>
+
+    <!-- Tabs List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/tabs_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="400dp"
+        android:paddingHorizontal="12dp"
+        android:clipToPadding="false" />
+</LinearLayout>
