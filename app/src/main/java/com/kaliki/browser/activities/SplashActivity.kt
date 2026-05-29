@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -18,19 +19,34 @@ class SplashActivity : AppCompatActivity() {
 
         val logo = findViewById<ImageView>(R.id.splash_logo)
         val text = findViewById<TextView>(R.id.splash_text)
+        val tagline = findViewById<TextView>(R.id.splash_tagline)
 
-        // Fade in + scale animation
+        // Start small and invisible
+        logo.scaleX = 0.3f
+        logo.scaleY = 0.3f
         logo.alpha = 0f
-        text.alpha = 0f
-        logo.animate().alpha(1f).scaleX(1.2f).scaleY(1.2f).setDuration(800).withEndAction {
-            logo.animate().scaleX(1f).scaleY(1f).setDuration(300).start()
-        }.start()
-        text.animate().alpha(1f).setStartDelay(500).setDuration(600).start()
+
+        // Logo: spring bounce from small to full size
+        logo.animate()
+            .scaleX(1f).scaleY(1f).alpha(1f)
+            .setDuration(800)
+            .setInterpolator(OvershootInterpolator(2.5f))
+            .withEndAction {
+                // Text slides up and fades in
+                text.translationY = 40f
+                text.animate().alpha(1f).translationY(0f).setDuration(400)
+                    .withEndAction {
+                        // Tagline fades in
+                        tagline.animate().alpha(1f).setDuration(300).start()
+                    }
+                    .start()
+            }
+            .start()
 
         Handler(Looper.getMainLooper()).postDelayed({
             startActivity(Intent(this, MainActivity::class.java))
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()
-        }, 1500)
+        }, 1800)
     }
 }

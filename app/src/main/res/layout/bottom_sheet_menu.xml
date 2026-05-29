@@ -5,16 +5,16 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@color/bg_primary"
-    android:paddingTop="12dp"
-    android:paddingBottom="20dp">
+    android:paddingTop="4dp"
+    android:paddingBottom="16dp">
 
     <!-- Handle -->
     <View
-        android:layout_width="40dp"
+        android:layout_width="36dp"
         android:layout_height="4dp"
         android:layout_gravity="center"
         android:background="@drawable/handle_bg"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="10dp" />
 
     <!-- Quick Actions Row: New Tab | Incognito | Bookmark | Share -->
     <LinearLayout
@@ -30,8 +30,8 @@
         </LinearLayout>
 
         <LinearLayout android:id="@+id/menu_incognito_top" style="@style/MenuItem">
-            <ImageView android:src="@drawable/ic_incognito" style="@style/MenuIcon" app:tint="@color/text_primary" />
-            <TextView android:text="Incognito" style="@style/MenuLabel" />
+            <ImageView android:src="@drawable/ic_incognito" style="@style/MenuIcon" app:tint="#AB47BC" />
+            <TextView android:text="Private" style="@style/MenuLabel" android:textColor="#AB47BC" />
         </LinearLayout>
 
         <LinearLayout android:id="@+id/menu_add_bookmark" style="@style/MenuItem">
