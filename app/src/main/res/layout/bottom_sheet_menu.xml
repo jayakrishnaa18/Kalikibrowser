@@ -63,6 +63,12 @@
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Downloads" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 
+    <LinearLayout android:id="@+id/menu_private" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_incognito" app:tint="#CE93D8" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Private mode" android:textSize="15sp" android:textColor="#CE93D8" android:textStyle="bold" />
+        <TextView android:id="@+id/menu_private_state" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="@color/text_hint" />
+    </LinearLayout>
+
     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginHorizontal="16dp" android:layout_marginVertical="6dp" />
 
     <LinearLayout android:id="@+id/menu_find" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">

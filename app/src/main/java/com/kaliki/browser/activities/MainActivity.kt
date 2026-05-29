@@ -799,6 +799,8 @@ class MainActivity : AppCompatActivity() {
         view.findViewById<LinearLayout>(R.id.menu_bookmarks).setOnClickListener { showBookmarks(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_history).setOnClickListener { showHistory(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_downloads).setOnClickListener { showDownloads(); dialog.dismiss() }
+        view.findViewById<LinearLayout>(R.id.menu_private).setOnClickListener { toggleIncognito(); dialog.dismiss() }
+        view.findViewById<TextView>(R.id.menu_private_state).text = if (isIncognito) "ON" else "OFF"
         view.findViewById<LinearLayout>(R.id.menu_find).setOnClickListener { showFindInPage(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_desktop).setOnClickListener { toggleDesktopMode(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_translate).setOnClickListener { translatePage(); dialog.dismiss() }
