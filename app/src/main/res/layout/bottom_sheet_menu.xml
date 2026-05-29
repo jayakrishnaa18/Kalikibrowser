@@ -5,8 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@color/bg_primary"
-    android:paddingTop="4dp"
-    android:paddingBottom="16dp">
+    android:paddingBottom="12dp">
 
     <!-- Handle -->
     <View
@@ -14,24 +13,25 @@
         android:layout_height="4dp"
         android:layout_gravity="center"
         android:background="@drawable/handle_bg"
-        android:layout_marginBottom="10dp" />
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp" />
 
-    <!-- Quick Actions Row: New Tab | Incognito | Bookmark | Share -->
+    <!-- Quick Actions: 4 icons in a row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:layout_marginBottom="8dp">
+        android:paddingHorizontal="12dp"
+        android:layout_marginBottom="6dp">
 
         <LinearLayout android:id="@+id/menu_new_tab" style="@style/MenuItem">
             <ImageView android:src="@drawable/ic_add" style="@style/MenuIcon" app:tint="@color/accent" />
-            <TextView android:text="New Tab" style="@style/MenuLabel" />
+            <TextView android:text="New tab" style="@style/MenuLabel" />
         </LinearLayout>
 
         <LinearLayout android:id="@+id/menu_incognito_top" style="@style/MenuItem">
-            <ImageView android:src="@drawable/ic_incognito" style="@style/MenuIcon" app:tint="#AB47BC" />
-            <TextView android:text="Private" style="@style/MenuLabel" android:textColor="#AB47BC" />
+            <ImageView android:src="@drawable/ic_incognito" style="@style/MenuIcon" app:tint="#CE93D8" />
+            <TextView android:text="Private" style="@style/MenuLabel" android:textColor="#CE93D8" />
         </LinearLayout>
 
         <LinearLayout android:id="@+id/menu_add_bookmark" style="@style/MenuItem">
@@ -40,150 +40,55 @@
         </LinearLayout>
 
         <LinearLayout android:id="@+id/menu_share" style="@style/MenuItem">
-            <ImageView android:src="@drawable/ic_share" style="@style/MenuIcon" app:tint="@color/text_primary" />
+            <ImageView android:src="@drawable/ic_share" style="@style/MenuIcon" app:tint="@color/text_secondary" />
             <TextView android:text="Share" style="@style/MenuLabel" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Divider -->
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginHorizontal="16dp" android:layout_marginVertical="8dp" />
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginHorizontal="16dp" android:layout_marginVertical="6dp" />
 
-    <!-- 1. Bookmarks -->
-    <LinearLayout
-        android:id="@+id/menu_bookmarks"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_bookmark" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bookmarks" android:textSize="14sp" android:textColor="@color/text_primary" />
+    <!-- Menu items -->
+    <LinearLayout android:id="@+id/menu_bookmarks" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_bookmark" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bookmarks" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 
-    <!-- 2. History -->
-    <LinearLayout
-        android:id="@+id/menu_history"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_history" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="History" android:textSize="14sp" android:textColor="@color/text_primary" />
+    <LinearLayout android:id="@+id/menu_history" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_history" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="History" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 
-    <!-- 3. Downloads -->
-    <LinearLayout
-        android:id="@+id/menu_downloads"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_download" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Downloads" android:textSize="14sp" android:textColor="@color/text_primary" />
+    <LinearLayout android:id="@+id/menu_downloads" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_download" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Downloads" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 
-    <!-- Divider -->
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginHorizontal="16dp" android:layout_marginVertical="8dp" />
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginHorizontal="16dp" android:layout_marginVertical="6dp" />
 
-    <!-- 4. Find in page -->
-    <LinearLayout
-        android:id="@+id/menu_find"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_search" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Find in page" android:textSize="14sp" android:textColor="@color/text_primary" />
+    <LinearLayout android:id="@+id/menu_find" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_search" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Find in page" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 
-    <!-- 5. Desktop site -->
-    <LinearLayout
-        android:id="@+id/menu_desktop"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_desktop" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Desktop site" android:textSize="14sp" android:textColor="@color/text_primary" />
+    <LinearLayout android:id="@+id/menu_desktop" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_desktop" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Desktop site" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 
-    <!-- 6. Reader mode -->
-    <LinearLayout
-        android:id="@+id/menu_reader"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_reader" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Reader mode" android:textSize="14sp" android:textColor="@color/text_primary" />
+    <LinearLayout android:id="@+id/menu_translate" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_share" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Translate" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 
-    <!-- Divider -->
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginHorizontal="16dp" android:layout_marginVertical="8dp" />
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginHorizontal="16dp" android:layout_marginVertical="6dp" />
 
-    <!-- 7. Print -->
-    <LinearLayout
-        android:id="@+id/menu_print"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_print" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Print" android:textSize="14sp" android:textColor="@color/text_primary" />
+    <LinearLayout android:id="@+id/menu_add_home" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_add" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add to home screen" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 
-    <!-- 8. Translate -->
-    <LinearLayout
-        android:id="@+id/menu_translate"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_share" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Translate" android:textSize="14sp" android:textColor="@color/text_primary" />
-    </LinearLayout>
-
-    <!-- 9. Add to home screen -->
-    <LinearLayout
-        android:id="@+id/menu_add_home"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_add" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add to home screen" android:textSize="14sp" android:textColor="@color/text_primary" />
-    </LinearLayout>
-
-    <!-- Divider -->
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginHorizontal="16dp" android:layout_marginVertical="8dp" />
-
-    <!-- 10. Settings -->
-    <LinearLayout
-        android:id="@+id/menu_settings"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:background="?attr/selectableItemBackground">
-        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_settings" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Settings" android:textSize="14sp" android:textColor="@color/text_primary" />
+    <LinearLayout android:id="@+id/menu_settings" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_settings" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Settings" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 </LinearLayout>

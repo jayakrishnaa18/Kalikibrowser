@@ -795,14 +795,12 @@ class MainActivity : AppCompatActivity() {
         view.findViewById<LinearLayout>(R.id.menu_add_bookmark).setOnClickListener { addBookmark(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
 
-        // List items (Chrome mobile order)
+        // List items
         view.findViewById<LinearLayout>(R.id.menu_bookmarks).setOnClickListener { showBookmarks(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_history).setOnClickListener { showHistory(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_downloads).setOnClickListener { showDownloads(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_find).setOnClickListener { showFindInPage(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_desktop).setOnClickListener { toggleDesktopMode(); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_reader).setOnClickListener { showToast("Reader mode not available in GeckoView"); dialog.dismiss() }
-        view.findViewById<LinearLayout>(R.id.menu_print).setOnClickListener { showToast("Print not available in GeckoView"); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_translate).setOnClickListener { translatePage(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_add_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_settings).setOnClickListener { openSettings(); dialog.dismiss() }

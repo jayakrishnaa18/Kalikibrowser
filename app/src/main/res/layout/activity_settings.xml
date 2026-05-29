@@ -9,32 +9,35 @@
     <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="52dp"
+        android:layout_height="56dp"
         android:gravity="center_vertical"
-        android:paddingHorizontal="12dp"
-        android:background="@color/bg_secondary">
+        android:paddingHorizontal="4dp"
+        android:background="@color/toolbar_bg"
+        android:elevation="2dp">
 
         <ImageButton
             android:id="@+id/btn_back_settings"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:src="@drawable/ic_back"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="10dp"
             app:tint="@color/text_primary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Settings"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
-            android:layout_marginStart="12dp" />
+            android:layout_marginStart="8dp" />
     </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -42,172 +45,266 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Privacy Section -->
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Privacy Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="PRIVACY &amp; SECURITY"
-                android:textSize="11sp"
-                android:textColor="@color/accent"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border"
+                app:cardBackgroundColor="@color/bg_secondary"
+                android:layout_marginBottom="12dp">
 
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_adblock"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Privacy &amp; Security"
+                        android:textSize="14sp"
+                        android:textColor="@color/accent"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_adblock"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Ad Blocker"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_tracker"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Tracker Blocker"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_cookies"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Block Third-Party Cookies"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_dnt"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Do Not Track"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Display Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Ad Blocker"
-                android:textColor="@color/text_primary"
-                app:thumbTint="@color/accent"
-                app:trackTint="@color/bg_tertiary" />
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_tracker"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Tracker Blocker"
-                android:textColor="@color/text_primary"
-                app:thumbTint="@color/accent"
-                app:trackTint="@color/bg_tertiary" />
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_cookies"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Block Third-Party Cookies"
-                android:textColor="@color/text_primary"
-                app:thumbTint="@color/accent"
-                app:trackTint="@color/bg_tertiary" />
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_dnt"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Do Not Track"
-                android:textColor="@color/text_primary"
-                app:thumbTint="@color/accent"
-                app:trackTint="@color/bg_tertiary" />
-
-            <!-- Display Section -->
-            <TextView
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DISPLAY"
-                android:textSize="11sp"
-                android:textColor="@color/accent"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="8dp" />
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border"
+                app:cardBackgroundColor="@color/bg_secondary"
+                android:layout_marginBottom="12dp">
 
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_dark_mode"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Display"
+                        android:textSize="14sp"
+                        android:textColor="@color/accent"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_dark_mode"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Force Dark Mode on Pages"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_javascript"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="JavaScript"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_images"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Load Images"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_save_data"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Data Saver Mode"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Search Engine Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Force Dark Mode on Pages"
-                android:textColor="@color/text_primary"
-                app:thumbTint="@color/accent"
-                app:trackTint="@color/bg_tertiary" />
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_javascript"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="JavaScript"
-                android:textColor="@color/text_primary"
-                app:thumbTint="@color/accent"
-                app:trackTint="@color/bg_tertiary" />
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_images"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Load Images"
-                android:textColor="@color/text_primary"
-                app:thumbTint="@color/accent"
-                app:trackTint="@color/bg_tertiary" />
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_save_data"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Data Saver Mode"
-                android:textColor="@color/text_primary"
-                app:thumbTint="@color/accent"
-                app:trackTint="@color/bg_tertiary" />
-
-            <!-- Search Section -->
-            <TextView
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SEARCH ENGINE"
-                android:textSize="11sp"
-                android:textColor="@color/accent"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="8dp" />
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border"
+                app:cardBackgroundColor="@color/bg_secondary"
+                android:layout_marginBottom="12dp">
 
-            <Spinner
-                android:id="@+id/spinner_search_engine"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Search Engine"
+                        android:textSize="14sp"
+                        android:textColor="@color/accent"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <Spinner
+                        android:id="@+id/spinner_search_engine"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:background="@drawable/url_bar_bg"
+                        android:paddingHorizontal="12dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Clear Data Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/url_bar_bg"
-                android:padding="8dp" />
-
-            <!-- Clear Data Section -->
-            <TextView
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="CLEAR DATA"
-                android:textSize="11sp"
-                android:textColor="@color/accent"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="8dp" />
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border"
+                app:cardBackgroundColor="@color/bg_secondary"
+                android:layout_marginBottom="12dp">
 
-            <Button
-                android:id="@+id/btn_clear_cache"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Clear Data"
+                        android:textSize="14sp"
+                        android:textColor="@color/accent"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_clear_cache"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Clear Cache"
+                        android:textAllCaps="false"
+                        android:textSize="14sp"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        app:strokeColor="@color/border"
+                        app:cornerRadius="10dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_clear_cookies"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Clear Cookies"
+                        android:textAllCaps="false"
+                        android:textSize="14sp"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        app:strokeColor="@color/border"
+                        app:cornerRadius="10dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_clear_all"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Clear All Browsing Data"
+                        android:textAllCaps="false"
+                        android:textSize="14sp"
+                        android:textColor="@color/white"
+                        app:backgroundTint="@color/danger"
+                        app:cornerRadius="10dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- About Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:text="Clear Cache"
-                android:textColor="@color/text_primary"
-                android:backgroundTint="@color/bg_tertiary"
-                android:layout_marginBottom="8dp" />
-
-            <Button
-                android:id="@+id/btn_clear_cookies"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:text="Clear Cookies"
-                android:textColor="@color/text_primary"
-                android:backgroundTint="@color/bg_tertiary"
-                android:layout_marginBottom="8dp" />
-
-            <Button
-                android:id="@+id/btn_clear_all"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:text="Clear All Browsing Data"
-                android:textColor="@android:color/white"
-                android:backgroundTint="@color/accent" />
-
-            <!-- About -->
-            <TextView
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ABOUT"
-                android:textSize="11sp"
-                android:textColor="@color/accent"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="8dp" />
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border"
+                app:cardBackgroundColor="@color/bg_secondary">
 
-            <TextView
-                android:id="@+id/version_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Kaliki Browser v1.0.0"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="About"
+                        android:textSize="14sp"
+                        android:textColor="@color/accent"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/version_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kaliki Browser v1.4.0"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Powered by GeckoView (Mozilla)"
+                        android:textColor="@color/text_hint"
+                        android:textSize="12sp"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
