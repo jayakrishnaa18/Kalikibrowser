@@ -2,6 +2,11 @@
   "manifest_version": 2,
   "name": "Kaliki Ad Blocker",
   "version": "1.0",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "adblocker@kaliki.browser"
+    }
+  },
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*", "*://*.youtu.be/*"],
