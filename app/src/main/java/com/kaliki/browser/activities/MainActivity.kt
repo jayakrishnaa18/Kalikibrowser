@@ -559,6 +559,8 @@ class MainActivity : AppCompatActivity() {
             override fun onPageStart(session: GeckoSession, url: String) {
                 if (tabManager.currentTab()?.session == session) {
                     runOnUiThread {
+                        // Hide NTP overlay — page is loading now
+                        newTabPage.visibility = View.GONE
                         progressBar.visibility = View.VISIBLE
                         progressBar.progress = 15
                         urlEditText.setText(url)
@@ -781,8 +783,15 @@ class MainActivity : AppCompatActivity() {
         tabManager.addTab(tab)
         updateTabCount()
         if (hasUrl) {
-            showGeckoSession(session)
+            // Attach session but keep NTP overlay visible until page loads
+            try { geckoView.releaseSession() } catch (_: Exception) {}
+            geckoView.setSession(session)
+            geckoView.visibility = View.VISIBLE
+            // NTP stays visible as loading overlay — hidden by onPageStart
             session.loadUri(url!!)
+            progressBar.visibility = View.VISIBLE
+            progressBar.progress = 10
+            urlEditText.setText(url)
         } else {
             showNewTabPage()
         }
@@ -791,18 +800,23 @@ class MainActivity : AppCompatActivity() {
     private fun showGeckoSession(session: GeckoSession) {
         try { geckoView.releaseSession() } catch (_: Exception) {}
         geckoView.setSession(session)
+        // Keep NTP visible briefly until page actually starts loading
+        // The progress delegate onPageStart will hide NTP
         geckoView.visibility = View.VISIBLE
-        newTabPage.visibility = View.GONE
         tabManager.currentTab()?.isOnNtp = false
     }
 
     private fun showNewTabPage() {
         captureTabThumbnail()
+        // Disconnect session completely
         try { geckoView.releaseSession() } catch (_: Exception) {}
         geckoView.visibility = View.GONE
         newTabPage.visibility = View.VISIBLE
+        // Force clear URL bar
         urlEditText.setText("")
+        urlEditText.hint = "Search or type URL"
         ntpSearch.setText("")
+        // Clear tab state
         tabManager.currentTab()?.apply {
             url = null
             title = "New Tab"
