@@ -62,6 +62,15 @@ class InterestsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         super.onCreate(savedInstanceState)
+
+        // Skip if already selected (prevents showing twice)
+        val feedManager = NewsFeedManager(this)
+        if (feedManager.isInterestsSelected()) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_interests)
 
         btnContinue = findViewById(R.id.btn_continue)

@@ -808,9 +808,7 @@ class MainActivity : AppCompatActivity() {
             progressBar.progress = 10
             urlEditText.setText(url)
         } else {
-            // New empty tab — show NTP, session ready for when user navigates
-            try { geckoView.releaseSession() } catch (_: Exception) {}
-            geckoView.setSession(session)  // Attach session so it's ready
+            // New empty tab — just show NTP (session will be created fresh when navigating)
             showNewTabPage()
         }
     }
@@ -828,7 +826,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun showNewTabPage() {
         captureTabThumbnail()
-        // Hide GeckoView, show NTP overlay
+        // Completely disconnect and destroy the session so no old content exists
+        try { geckoView.releaseSession() } catch (_: Exception) {}
         geckoView.visibility = View.GONE
         newTabPage.visibility = View.VISIBLE
         // Force clear URL bar
@@ -918,13 +917,19 @@ class MainActivity : AppCompatActivity() {
         if (currentTab == null) {
             createNewTab(url)
         } else if (currentTab.isOnNtp) {
-            // Session is already attached (from createNewTab). Just load URL.
+            // CLOSE old session completely and create fresh one
+            // This is the ONLY way to guarantee no old page content shows
+            try { geckoView.releaseSession() } catch (_: Exception) {}
+            currentTab.session.close()
+            val freshSession = createGeckoSession()
+            currentTab.session = freshSession
             currentTab.url = url
             currentTab.title = "Loading..."
             currentTab.isOnNtp = false
+            geckoView.setSession(freshSession)
             geckoView.visibility = View.VISIBLE
             newTabPage.visibility = View.GONE
-            currentTab.session.loadUri(url)
+            freshSession.loadUri(url)
             progressBar.visibility = View.VISIBLE
             urlEditText.setText(url)
         } else {
