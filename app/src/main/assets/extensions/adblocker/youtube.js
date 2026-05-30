@@ -28,7 +28,7 @@
                        player.classList.contains('ad-interrupting');
 
         if (adShowing) {
-            // Try to click skip button first
+            // Always try to click skip button first (instant)
             var skip = document.querySelector(
                 '.ytp-skip-ad-button, .ytp-ad-skip-button-modern, ' +
                 'button.ytp-ad-skip-button, [class*="skip-button"], ' +
@@ -36,15 +36,24 @@
             );
             if (skip) { skip.click(); return; }
 
-            // Jump to end of ad (no playbackRate change — avoids blank screen)
-            if (video.readyState >= 2 && isFinite(video.duration) && video.duration > 0.5) {
-                video.currentTime = video.duration - 0.01;
-            }
-            // Mute ad audio
+            // Mute immediately so user doesn't hear ad
             video.muted = true;
+
+            // Jump to end as soon as ANY data is available
+            if (video.readyState >= 1 && isFinite(video.duration) && video.duration > 0) {
+                video.currentTime = video.duration;
+            }
+
+            // Also try setting playback rate to max speed
+            try { video.playbackRate = 16; } catch(e) {}
+
+            // Hide the video element during ad (show loading background instead of blank)
+            video.style.opacity = '0';
         } else {
-            // Unmute for real content
+            // Real content playing — restore everything
             if (video.muted) video.muted = false;
+            if (video.playbackRate !== 1) video.playbackRate = 1;
+            if (video.style.opacity === '0') video.style.opacity = '1';
         }
 
         // Remove overlay ads and promoted content
@@ -71,7 +80,7 @@
         document.querySelectorAll(adSelectors.join(',')).forEach(function(el) { el.remove(); });
     }, 300);
 
-    // MutationObserver for instant ad detection
+    // MutationObserver for INSTANT ad detection (faster than interval)
     var observer = new MutationObserver(function(mutations) {
         for (var m of mutations) {
             if (m.type === 'attributes' && m.attributeName === 'class') {
@@ -80,9 +89,13 @@
                     var video = document.querySelector('video');
                     var skip = document.querySelector('.ytp-skip-ad-button, .ytp-ad-skip-button-modern');
                     if (skip) { skip.click(); return; }
-                    if (video && video.readyState >= 2 && isFinite(video.duration) && video.duration > 0.5) {
-                        video.currentTime = video.duration - 0.01;
+                    if (video) {
                         video.muted = true;
+                        video.style.opacity = '0';
+                        if (isFinite(video.duration) && video.duration > 0) {
+                            video.currentTime = video.duration;
+                            try { video.playbackRate = 16; } catch(e) {}
+                        }
                     }
                 }
             }

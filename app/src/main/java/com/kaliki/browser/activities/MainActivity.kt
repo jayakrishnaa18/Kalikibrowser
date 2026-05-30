@@ -943,6 +943,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var audioFocusRequest: AudioFocusRequest? = null
+    private var wakeLock: android.os.PowerManager.WakeLock? = null
+
     private fun requestAudioFocus() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -954,6 +956,25 @@ class MainActivity : AppCompatActivity() {
                 .build()
             audioFocusRequest = request
             audioManager.requestAudioFocus(request)
+        }
+    }
+
+    private fun acquireWakeLock() {
+        if (wakeLock == null) {
+            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            wakeLock = pm.newWakeLock(
+                android.os.PowerManager.PARTIAL_WAKE_LOCK,
+                "kaliki:background_audio"
+            )
+        }
+        if (wakeLock?.isHeld == false) {
+            wakeLock?.acquire(30 * 60 * 1000L) // 30 minutes max
+        }
+    }
+
+    private fun releaseWakeLock() {
+        if (wakeLock?.isHeld == true) {
+            wakeLock?.release()
         }
     }
 
@@ -1768,6 +1789,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         isActivityDestroyed = false
+        releaseWakeLock()
         // Session is active when visible
         tabManager.currentTab()?.session?.setActive(true)
         updateNavButtons()
@@ -1775,16 +1797,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        // Keep session active for YouTube background playback
-        // setActive(true) tells GeckoView to keep processing audio even when not visible
-        tabManager.currentTab()?.session?.setActive(true)
+        // Keep ALL sessions active for background playback
+        tabManager.tabs.forEach { it.session.setActive(true) }
         requestAudioFocus()
+        acquireWakeLock()
     }
 
     override fun onStop() {
         super.onStop()
-        // Keep session active — do NOT close or suspend sessions
-        tabManager.currentTab()?.session?.setActive(true)
+        // Keep ALL sessions active — never let them sleep
+        tabManager.tabs.forEach { it.session.setActive(true) }
         val tabData = tabManager.tabs
             .filter { !it.isOnNtp && it.url != null }
             .map { mapOf("url" to (it.url ?: ""), "title" to it.title) }
