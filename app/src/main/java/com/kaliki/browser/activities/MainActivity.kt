@@ -5,6 +5,8 @@ import android.app.DownloadManager
 import android.content.*
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -17,6 +19,7 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
@@ -34,6 +37,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+// QR scanning via intent (no external library needed)
 import com.kaliki.browser.R
 import com.kaliki.browser.adapters.SimpleListAdapter
 import com.kaliki.browser.adapters.SuggestionsAdapter
@@ -727,6 +731,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val PERMISSION_REQUEST_CODE = 1001
+        const val QR_SCAN_REQUEST = 1002
     }
 
     private fun findTabBySession(session: GeckoSession): BrowserTab? {
@@ -791,6 +796,9 @@ class MainActivity : AppCompatActivity() {
         }
         updateBlockedCount()
         updateNavButtons()
+        // Apply theme accent color to NTP search bar outline
+        val accentColor = getSharedPreferences("kaliki_prefs", MODE_PRIVATE).getInt("accent_color", 0xFF4285F4.toInt())
+        ntpSearch.background?.setTint(accentColor)
     }
 
     private fun currentSession(): GeckoSession? {
@@ -1044,6 +1052,10 @@ class MainActivity : AppCompatActivity() {
         view.findViewById<LinearLayout>(R.id.menu_find).setOnClickListener { showFindInPage(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_desktop).setOnClickListener { toggleDesktopMode(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_translate).setOnClickListener { translatePage(); dialog.dismiss() }
+        view.findViewById<LinearLayout>(R.id.menu_screenshot).setOnClickListener { screenshotPage(); dialog.dismiss() }
+        view.findViewById<LinearLayout>(R.id.menu_save_page).setOnClickListener { saveToReadingList(); dialog.dismiss() }
+        view.findViewById<LinearLayout>(R.id.menu_reading_list).setOnClickListener { showReadingList(); dialog.dismiss() }
+        view.findViewById<LinearLayout>(R.id.menu_scan_qr).setOnClickListener { openQrScanner(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_download_media).setOnClickListener { downloadMediaFromPage(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_add_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_settings).setOnClickListener { openSettings(); dialog.dismiss() }
@@ -1062,7 +1074,7 @@ class MainActivity : AppCompatActivity() {
         view.findViewById<TextView>(R.id.tabs_count_label).text = "${tabManager.tabs.size} Tabs"
         val recycler = view.findViewById<RecyclerView>(R.id.tabs_recycler)
         recycler.layoutManager = LinearLayoutManager(this@MainActivity)
-        val tabAdapter = TabAdapter(tabManager.tabs, { idx -> switchToTab(idx); dialog.dismiss() }, { tab -> closeTab(tab); dialog.dismiss() })
+        val tabAdapter = TabAdapter(tabManager.tabs, { idx -> switchToTab(idx); dialog.dismiss() }, { tab -> closeTab(tab); dialog.dismiss() }, { tab, _ -> showTabGroupColorPicker(tab) })
         recycler.adapter = tabAdapter
         tabAdapter.attachSwipeToClose(recycler)
         view.findViewById<Button>(R.id.btn_new_tab).setOnClickListener { createNewTab(null); dialog.dismiss() }
@@ -1431,6 +1443,101 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             showToast("Screenshot failed: ${e.message}")
         }
+    }
+
+    // =================== QR CODE SCANNER ===================
+
+    private fun openQrScanner() {
+        // Try to use any installed QR scanner app via intent
+        try {
+            val intent = Intent("com.google.zxing.client.android.SCAN")
+            intent.putExtra("SCAN_MODE", "QR_CODE_MODE")
+            @Suppress("DEPRECATION")
+            startActivityForResult(intent, 9999)
+        } catch (_: Exception) {
+            // No QR scanner app — open Google Lens as fallback
+            try {
+                val lensIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://lens.google.com"))
+                startActivity(lensIntent)
+            } catch (_: Exception) {
+                showToast("No QR scanner available. Install Google Lens or any barcode scanner app.")
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 9999 && resultCode == RESULT_OK) {
+            val scanned = data?.getStringExtra("SCAN_RESULT") ?: return
+            if (scanned.startsWith("http://") || scanned.startsWith("https://")) {
+                navigateTo(scanned)
+            } else {
+                navigateTo(scanned)
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
+    // =================== READING LIST ===================
+
+    private fun saveToReadingList() {
+        val tab = tabManager.currentTab() ?: return
+        if (tab.isOnNtp || tab.url == null) { showToast("No page to save"); return }
+
+        val prefs = getSharedPreferences("kaliki_reading_list", MODE_PRIVATE)
+        val existing = prefs.getStringSet("urls", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+        existing.add("${tab.url}|||${tab.title}")
+        prefs.edit().putStringSet("urls", existing).apply()
+        showToast("Saved to Reading List")
+    }
+
+    private fun showReadingList() {
+        val prefs = getSharedPreferences("kaliki_reading_list", MODE_PRIVATE)
+        val items = prefs.getStringSet("urls", emptySet()) ?: emptySet()
+        val listItems = items.map {
+            val parts = it.split("|||")
+            ListItem(parts.getOrElse(1) { "Saved page" }, parts.getOrElse(0) { "" }, parts.getOrElse(0) { "" })
+        }
+
+        val d = BottomSheetDialog(this, R.style.BottomSheetTheme)
+        val v = layoutInflater.inflate(R.layout.bottom_sheet_list, null)
+        d.setContentView(v)
+        v.findViewById<TextView>(R.id.list_title).text = "Reading List"
+        val rv = v.findViewById<RecyclerView>(R.id.list_recycler)
+        rv.layoutManager = LinearLayoutManager(this@MainActivity)
+        rv.adapter = SimpleListAdapter(listItems, { item -> navigateTo(item.subtitle); d.dismiss() }, { item ->
+            val existingSet = prefs.getStringSet("urls", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+            existingSet.removeAll { it.startsWith(item.subtitle + "|||") || it == item.subtitle + "|||" + item.title }
+            prefs.edit().putStringSet("urls", existingSet).apply()
+            showToast("Removed from Reading List")
+            d.dismiss()
+        })
+        if (listItems.isEmpty()) {
+            showToast("Reading list is empty")
+        }
+        d.show()
+    }
+
+    // =================== TAB GROUPS ===================
+
+    private fun showTabGroupColorPicker(tab: BrowserTab) {
+        val colors = listOf(
+            Pair("None", 0),
+            Pair("Red", 0xFFEA4335.toInt()),
+            Pair("Blue", 0xFF4285F4.toInt()),
+            Pair("Green", 0xFF34A853.toInt()),
+            Pair("Orange", 0xFFFF9800.toInt()),
+            Pair("Purple", 0xFF9C27B0.toInt())
+        )
+        val colorNames = colors.map { it.first }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Tab Group Color")
+            .setItems(colorNames) { _, which ->
+                tab.groupColor = colors[which].second
+                showToast(if (which == 0) "Group color removed" else "${colors[which].first} group set")
+            }
+            .show()
     }
 
     // =================== GESTURE NAVIGATION ===================

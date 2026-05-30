@@ -60,6 +60,26 @@
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Translate" android:textSize="15sp" android:textColor="@color/text_primary" />
     </LinearLayout>
 
+    <LinearLayout android:id="@+id/menu_screenshot" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_download" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Screenshot" android:textSize="15sp" android:textColor="@color/text_primary" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/menu_save_page" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_bookmark" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Save page" android:textSize="15sp" android:textColor="@color/text_primary" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/menu_reading_list" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_reader" app:tint="@color/text_secondary" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Reading list" android:textSize="15sp" android:textColor="@color/text_primary" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/menu_scan_qr" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_search" app:tint="@color/accent" android:layout_marginEnd="16dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Scan QR code" android:textSize="15sp" android:textColor="@color/text_primary" />
+    </LinearLayout>
+
     <LinearLayout android:id="@+id/menu_download_media" android:layout_width="match_parent" android:layout_height="46dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:background="?attr/selectableItemBackground">
         <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_download" app:tint="@color/accent" android:layout_marginEnd="16dp" />
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Download media" android:textSize="15sp" android:textColor="@color/text_primary" />

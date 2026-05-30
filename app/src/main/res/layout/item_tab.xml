@@ -15,6 +15,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- Tab group color stripe -->
+        <View
+            android:id="@+id/tab_group_stripe"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_alignParentTop="true"
+            android:visibility="gone"
+            android:elevation="10dp" />
+
         <!-- Thumbnail fills the entire card -->
         <ImageView
             android:id="@+id/tab_thumbnail"

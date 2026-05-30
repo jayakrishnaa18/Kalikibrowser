@@ -10,7 +10,8 @@ data class BrowserTab(
     var url: String? = null,
     var isIncognito: Boolean = false,
     var isOnNtp: Boolean = true,
-    var thumbnail: Bitmap? = null
+    var thumbnail: Bitmap? = null,
+    var groupColor: Int = 0
 )
 
 data class Bookmark(

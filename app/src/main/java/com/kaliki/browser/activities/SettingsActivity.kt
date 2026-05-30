@@ -1,6 +1,9 @@
 package com.kaliki.browser.activities
 
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.Gravity
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +27,7 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.btn_back_settings).setOnClickListener { finish() }
 
         setupToggles()
+        setupThemeColor()
         setupSearchEngine()
         setupPasswords()
         setupExtensions()
@@ -59,6 +63,44 @@ class SettingsActivity : AppCompatActivity() {
         js.setOnCheckedChangeListener { _, checked -> prefsManager.setJavaScript(checked) }
         images.setOnCheckedChangeListener { _, checked -> prefsManager.setLoadImages(checked) }
         saveData.setOnCheckedChangeListener { _, checked -> prefsManager.setSaveData(checked) }
+    }
+
+    private fun setupThemeColor() {
+        val row = findViewById<LinearLayout>(R.id.theme_color_row)
+        val colors = listOf(
+            Pair("Blue", 0xFF4285F4.toInt()),
+            Pair("Red", 0xFFEA4335.toInt()),
+            Pair("Green", 0xFF34A853.toInt()),
+            Pair("Purple", 0xFF9C27B0.toInt()),
+            Pair("Orange", 0xFFFF9800.toInt()),
+            Pair("Pink", 0xFFE91E63.toInt()),
+            Pair("Teal", 0xFF009688.toInt())
+        )
+        val prefs = getSharedPreferences("kaliki_prefs", MODE_PRIVATE)
+        val savedColor = prefs.getInt("accent_color", 0xFF4285F4.toInt())
+
+        for ((name, color) in colors) {
+            val circle = View(this).apply {
+                val size = (40 * resources.displayMetrics.density).toInt()
+                layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                    marginEnd = (8 * resources.displayMetrics.density).toInt()
+                }
+                val shape = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(color)
+                    if (color == savedColor) {
+                        setStroke((3 * resources.displayMetrics.density).toInt(), 0xFFFFFFFF.toInt())
+                    }
+                }
+                background = shape
+                setOnClickListener {
+                    prefs.edit().putInt("accent_color", color).apply()
+                    Toast.makeText(this@SettingsActivity, "$name selected - restart app to apply", Toast.LENGTH_SHORT).show()
+                    setupThemeColor() // Refresh selection indicator
+                }
+            }
+            row.addView(circle)
+        }
     }
 
     private fun setupSearchEngine() {

@@ -15,7 +15,8 @@ import com.kaliki.browser.models.BrowserTab
 class TabAdapter(
     private val tabs: MutableList<BrowserTab>,
     private val onTabClick: (Int) -> Unit,
-    private val onTabClose: (BrowserTab) -> Unit
+    private val onTabClose: (BrowserTab) -> Unit,
+    private val onTabLongPress: ((BrowserTab, Int) -> Unit)? = null
 ) : RecyclerView.Adapter<TabAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -25,6 +26,7 @@ class TabAdapter(
         val favicon: ImageView = view.findViewById(R.id.tab_favicon)
         val thumbnail: ImageView = view.findViewById(R.id.tab_thumbnail)
         val urlContainer: LinearLayout = view.findViewById(R.id.tab_url_container)
+        val groupStripe: View = view.findViewById(R.id.tab_group_stripe)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -46,11 +48,23 @@ class TabAdapter(
             holder.thumbnail.visibility = View.VISIBLE // still show with bg color
         }
 
+        // Show tab group color stripe
+        if (tab.groupColor != 0) {
+            holder.groupStripe.setBackgroundColor(tab.groupColor)
+            holder.groupStripe.visibility = View.VISIBLE
+        } else {
+            holder.groupStripe.visibility = View.GONE
+        }
+
         // URL container always visible at bottom
         holder.urlContainer.visibility = View.VISIBLE
 
         holder.itemView.setOnClickListener { onTabClick(position) }
         holder.closeBtn.setOnClickListener { onTabClose(tab) }
+        holder.itemView.setOnLongClickListener {
+            onTabLongPress?.invoke(tab, position)
+            true
+        }
     }
 
     override fun getItemCount() = tabs.size
