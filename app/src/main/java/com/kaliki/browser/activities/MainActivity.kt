@@ -81,10 +81,13 @@ class MainActivity : AppCompatActivity() {
     private var canGoBack = false
     private var canGoForward = false
 
+    private var isActivityDestroyed = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         applyDarkModePreference()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        isActivityDestroyed = false
         initManagers()
         initGeckoRuntime()
         requestNotificationPermission()
@@ -118,9 +121,13 @@ class MainActivity : AppCompatActivity() {
                         session.loadUri(url)
                     }
                     updateTabCount()
-                    val activeIdx = prefs.getInt("active_tab_index", 0)
-                        .coerceIn(0, tabManager.tabs.size - 1)
-                    switchToTab(activeIdx)
+                    if (tabManager.tabs.isNotEmpty()) {
+                        val activeIdx = prefs.getInt("active_tab_index", 0)
+                            .coerceIn(0, tabManager.tabs.size - 1)
+                        switchToTab(activeIdx)
+                    } else {
+                        createNewTab(null)
+                    }
                 } catch (_: Exception) {
                     createNewTab(null)
                 }
@@ -317,8 +324,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadFavicon(url: String, imageView: ImageView, fallbackText: TextView) {
         Thread {
+            var connection: java.net.HttpURLConnection? = null
             try {
-                val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+                connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
                 connection.connectTimeout = 5000
                 connection.readTimeout = 5000
                 connection.instanceFollowRedirects = true
@@ -326,14 +334,18 @@ class MainActivity : AppCompatActivity() {
                 connection.connect()
                 if (connection.responseCode == 200) {
                     val bitmap = android.graphics.BitmapFactory.decodeStream(connection.inputStream)
-                    if (bitmap != null) runOnUiThread {
-                        imageView.setImageBitmap(bitmap)
-                        imageView.visibility = View.VISIBLE
-                        fallbackText.visibility = View.GONE
+                    if (bitmap != null && !isActivityDestroyed) runOnUiThread {
+                        if (!isActivityDestroyed) {
+                            imageView.setImageBitmap(bitmap)
+                            imageView.visibility = View.VISIBLE
+                            fallbackText.visibility = View.GONE
+                        }
                     }
                 }
-                connection.disconnect()
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            } finally {
+                connection?.disconnect()
+            }
         }.start()
     }
 
@@ -461,7 +473,8 @@ class MainActivity : AppCompatActivity() {
                         val ctaView = nativeAdView.findViewById<android.widget.Button>(R.id.ad_call_to_action)
                         ctaView.text = nativeAd.callToAction ?: "Learn More"; nativeAdView.callToActionView = ctaView
                         val iconView = nativeAdView.findViewById<ImageView>(R.id.ad_icon)
-                        if (nativeAd.icon != null) { iconView.setImageDrawable(nativeAd.icon!!.drawable); iconView.visibility = View.VISIBLE }
+                        val adIcon = nativeAd.icon
+                        if (adIcon != null) { iconView.setImageDrawable(adIcon.drawable); iconView.visibility = View.VISIBLE }
                         nativeAdView.iconView = iconView
                         val advView = nativeAdView.findViewById<TextView>(R.id.ad_advertiser)
                         advView.text = nativeAd.advertiser ?: "Sponsored"; nativeAdView.advertiserView = advView
@@ -553,16 +566,19 @@ class MainActivity : AppCompatActivity() {
 
         session.progressDelegate = object : ProgressDelegate {
             override fun onPageStart(session: GeckoSession, url: String) {
+                val tab = findTabBySession(session)
+                tab?.url = url
+                tab?.isOnNtp = false
                 if (tabManager.currentTab()?.session == session) {
                     runOnUiThread {
                         // Hide NTP overlay — page is loading now
                         newTabPage.visibility = View.GONE
+                        geckoView.visibility = View.VISIBLE
                         progressBar.visibility = View.VISIBLE
                         progressBar.progress = 15
                         urlEditText.setText(url)
                     }
                 }
-                findTabBySession(session)?.url = url
             }
 
             override fun onPageStop(session: GeckoSession, success: Boolean) {
@@ -574,8 +590,9 @@ class MainActivity : AppCompatActivity() {
                         updateNavButtons()
                     }
                 }
-                if (!isIncognito && tab != null && tab.url != null && !tab.url!!.startsWith("about:")) {
-                    historyManager.addEntry(tab.title, tab.url!!)
+                val tabUrl = tab?.url
+                if (!isIncognito && tab != null && tabUrl != null && !tabUrl.startsWith("about:")) {
+                    historyManager.addEntry(tab.title, tabUrl)
                 }
                 // Inject YouTube ad-skip and background playback scripts
                 val url = tab?.url ?: ""
@@ -767,7 +784,7 @@ class MainActivity : AppCompatActivity() {
     // =================== TAB MANAGEMENT ===================
 
     fun createNewTab(url: String?) {
-        val hasUrl = url != null && url.isNotEmpty()
+        val hasUrl = !url.isNullOrEmpty()
         val session = createGeckoSession()
         val tab = BrowserTab(
             id = System.currentTimeMillis().toString(),
@@ -778,12 +795,13 @@ class MainActivity : AppCompatActivity() {
         )
         tabManager.addTab(tab)
         updateTabCount()
-        if (hasUrl) {
+        if (hasUrl && url != null) {
             // Attach session and load URL. NTP overlay stays until onPageStart.
             try { geckoView.releaseSession() } catch (_: Exception) {}
             geckoView.setSession(session)
             geckoView.visibility = View.VISIBLE
-            session.loadUri(url!!)
+            newTabPage.visibility = View.GONE
+            session.loadUri(url)
             progressBar.visibility = View.VISIBLE
             progressBar.progress = 10
             urlEditText.setText(url)
@@ -801,7 +819,9 @@ class MainActivity : AppCompatActivity() {
         // Keep NTP visible briefly until page actually starts loading
         // The progress delegate onPageStart will hide NTP
         geckoView.visibility = View.VISIBLE
-        tabManager.currentTab()?.isOnNtp = false
+        newTabPage.visibility = View.GONE
+        // Mark the tab that owns this session as not on NTP
+        findTabBySession(session)?.isOnNtp = false
     }
 
     private fun showNewTabPage() {
@@ -838,8 +858,8 @@ class MainActivity : AppCompatActivity() {
         if (tabManager.tabs.isEmpty()) {
             createNewTab(null)
         } else {
-            val c = tabManager.currentTab()!!
-            if (!c.isOnNtp && c.url != null) {
+            val c = tabManager.currentTab()
+            if (c != null && !c.isOnNtp && c.url != null) {
                 showGeckoSession(c.session)
                 urlEditText.setText(c.url)
             } else {
@@ -851,15 +871,22 @@ class MainActivity : AppCompatActivity() {
     private fun switchToTab(index: Int) {
         tabManager.switchTo(index)
         val tab = tabManager.currentTab() ?: return
-        if (!tab.isOnNtp && tab.url != null) {
-            try { geckoView.releaseSession() } catch (_: Exception) {}
-            geckoView.setSession(tab.session)
+        try { geckoView.releaseSession() } catch (_: Exception) {}
+        if (!tab.session.isOpen) {
+            // Session was closed unexpectedly, re-open it
+            tab.session = createGeckoSession()
+            val savedUrl = tab.url
+            if (!tab.isOnNtp && savedUrl != null) {
+                tab.session.loadUri(savedUrl)
+            }
+        }
+        geckoView.setSession(tab.session)
+        val tabUrl = tab.url
+        if (!tab.isOnNtp && tabUrl != null) {
             geckoView.visibility = View.VISIBLE
             newTabPage.visibility = View.GONE
-            urlEditText.setText(tab.url)
+            urlEditText.setText(tabUrl)
         } else {
-            try { geckoView.releaseSession() } catch (_: Exception) {}
-            geckoView.setSession(tab.session)
             showNewTabPage()
         }
         updateNavButtons()
@@ -894,7 +921,7 @@ class MainActivity : AppCompatActivity() {
             currentTab.title = "Loading..."
             currentTab.isOnNtp = false
             geckoView.visibility = View.VISIBLE
-            // NTP stays visible until onPageStart hides it
+            newTabPage.visibility = View.GONE
             currentTab.session.loadUri(url)
             progressBar.visibility = View.VISIBLE
             urlEditText.setText(url)
@@ -912,13 +939,14 @@ class MainActivity : AppCompatActivity() {
     private fun requestAudioFocus() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                 .setAudioAttributes(AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .build())
                 .build()
-            audioManager.requestAudioFocus(audioFocusRequest!!)
+            audioFocusRequest = request
+            audioManager.requestAudioFocus(request)
         }
     }
 
@@ -1114,7 +1142,13 @@ class MainActivity : AppCompatActivity() {
         recycler.adapter = tabAdapter
         tabAdapter.attachSwipeToClose(recycler)
         view.findViewById<Button>(R.id.btn_new_tab).setOnClickListener { createNewTab(null); dialog.dismiss() }
-        view.findViewById<Button>(R.id.btn_close_all).setOnClickListener { tabManager.tabs.toList().forEach { closeTab(it) }; dialog.dismiss() }
+        view.findViewById<Button>(R.id.btn_close_all).setOnClickListener {
+            val allTabs = tabManager.tabs.toList()
+            allTabs.forEach { tab -> tab.session.close() }
+            tabManager.tabs.clear()
+            createNewTab(null)
+            dialog.dismiss()
+        }
         dialog.show()
     }
 
@@ -1296,14 +1330,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun addBookmark() {
         val t = tabManager.currentTab() ?: return
-        if (t.isOnNtp || t.url == null) { showToast("No page to bookmark"); return }
-        if (bookmarkManager.isBookmarked(t.url!!)) {
+        val currentUrl = t.url
+        if (t.isOnNtp || currentUrl == null) { showToast("No page to bookmark"); return }
+        if (bookmarkManager.isBookmarked(currentUrl)) {
             val all = bookmarkManager.getAll()
-            val existing = all.find { it.url == t.url }
+            val existing = all.find { it.url == currentUrl }
             if (existing != null) bookmarkManager.remove(existing.id)
             showToast("Bookmark removed")
         } else {
-            bookmarkManager.add(t.title, t.url!!)
+            bookmarkManager.add(t.title, currentUrl)
             showToast("Bookmarked")
         }
     }
@@ -1345,20 +1380,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadNewsImage(url: String, imageView: ImageView, fallbackText: TextView?) {
         Thread {
+            var connection: java.net.HttpURLConnection? = null
             try {
-                val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+                connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
                 connection.connectTimeout = 3000; connection.readTimeout = 3000
                 connection.instanceFollowRedirects = true; connection.connect()
                 if (connection.responseCode == 200) {
                     val bitmap = android.graphics.BitmapFactory.decodeStream(connection.inputStream)
-                    if (bitmap != null) runOnUiThread {
-                        imageView.setImageBitmap(bitmap)
-                        imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-                        fallbackText?.visibility = View.GONE
+                    if (bitmap != null && !isActivityDestroyed) runOnUiThread {
+                        if (!isActivityDestroyed) {
+                            imageView.setImageBitmap(bitmap)
+                            imageView.scaleType = ImageView.ScaleType.CENTER_CROP
+                            fallbackText?.visibility = View.GONE
+                        }
                     }
                 }
-                connection.disconnect()
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+            } finally {
+                connection?.disconnect()
+            }
         }.start()
     }
 
@@ -1465,7 +1505,9 @@ class MainActivity : AppCompatActivity() {
                     put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/KalikiBrowser")
                 }
                 val uri = contentResolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-                fos = contentResolver.openOutputStream(uri!!)!!
+                    ?: throw java.io.IOException("Failed to create media store entry")
+                fos = contentResolver.openOutputStream(uri)
+                    ?: throw java.io.IOException("Failed to open output stream")
             } else {
                 @Suppress("DEPRECATION")
                 val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/KalikiBrowser")
@@ -1591,7 +1633,7 @@ class MainActivity : AppCompatActivity() {
                 MotionEvent.ACTION_UP -> {
                     val dx = event.rawX - startX
                     if (dx > 80) {
-                        tabManager.currentTab()?.session?.goBack()
+                        goBack()
                     }
                     true
                 }
@@ -1605,7 +1647,7 @@ class MainActivity : AppCompatActivity() {
                 MotionEvent.ACTION_UP -> {
                     val dx = startX - event.rawX
                     if (dx > 80) {
-                        tabManager.currentTab()?.session?.goForward()
+                        goForward()
                     }
                     true
                 }
@@ -1616,7 +1658,7 @@ class MainActivity : AppCompatActivity() {
 
     // =================== SMART SEARCH SUGGESTIONS ===================
 
-    private var searchJob: Thread? = null
+    @Volatile private var searchJob: Thread? = null
 
     private fun setupSearchSuggestions() {
         urlEditText.addTextChangedListener(object : TextWatcher {
@@ -1627,14 +1669,22 @@ class MainActivity : AppCompatActivity() {
                 if (query.length < 2) { hideSuggestions(); return }
                 if (!urlEditText.hasFocus()) return
                 searchJob?.interrupt()
-                searchJob = Thread {
+                val job = Thread {
                     try {
                         Thread.sleep(200) // debounce
+                        if (Thread.currentThread().isInterrupted) return@Thread
                         val suggestions = fetchSuggestions(query)
-                        runOnUiThread { showSuggestions(suggestions) }
+                        if (!isActivityDestroyed && !Thread.currentThread().isInterrupted) {
+                            runOnUiThread {
+                                if (!isActivityDestroyed && urlEditText.hasFocus()) {
+                                    showSuggestions(suggestions)
+                                }
+                            }
+                        }
                     } catch (_: InterruptedException) {}
                 }
-                searchJob?.start()
+                searchJob = job
+                job.start()
             }
         })
     }
@@ -1710,8 +1760,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        isActivityDestroyed = false
         // Session is active when visible
         tabManager.currentTab()?.session?.setActive(true)
+        updateNavButtons()
     }
 
     override fun onPause() {
@@ -1737,29 +1789,43 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        isActivityDestroyed = true
+        searchJob?.interrupt()
+        searchJob = null
         tabManager.tabs.forEach { it.session.close() }
         nativeAds.forEach { it.destroy() }
+        nativeAds.clear()
         super.onDestroy()
     }
 
     private fun hideKeyboard() { (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(urlEditText.windowToken, 0); urlEditText.clearFocus(); ntpSearch.clearFocus() }
     private fun showKeyboard(view: View) { (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(view, InputMethodManager.SHOW_IMPLICIT) }
-    private fun showToast(msg: String) { Snackbar.make(geckoView, msg, Snackbar.LENGTH_SHORT).show() }
+    private fun showToast(msg: String) {
+        val anchor = findViewById<View>(android.R.id.content) ?: return
+        Snackbar.make(anchor, msg, Snackbar.LENGTH_SHORT).show()
+    }
 
     private fun loadImageAsync(url: String, imageView: ImageView) {
         Thread {
+            var conn: java.net.HttpURLConnection? = null
             try {
-                val conn = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+                conn = java.net.URL(url).openConnection() as java.net.HttpURLConnection
                 conn.connectTimeout = 3000; conn.readTimeout = 3000
                 conn.instanceFollowRedirects = true
                 conn.setRequestProperty("User-Agent", "Mozilla/5.0")
                 conn.connect()
                 if (conn.responseCode == 200) {
                     val bitmap = android.graphics.BitmapFactory.decodeStream(conn.inputStream)
-                    if (bitmap != null) runOnUiThread { imageView.setImageBitmap(bitmap) }
+                    if (bitmap != null && !isActivityDestroyed) {
+                        runOnUiThread {
+                            if (!isActivityDestroyed) imageView.setImageBitmap(bitmap)
+                        }
+                    }
                 }
-                conn.disconnect()
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            } finally {
+                conn?.disconnect()
+            }
         }.start()
     }
 }
