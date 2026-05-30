@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_primary">
+    android:background="#0D1117">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -12,34 +12,33 @@
         android:orientation="vertical"
         android:gravity="center">
 
+        <!-- App Logo -->
         <ImageView
             android:id="@+id/splash_logo"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/ic_logo"
-            android:alpha="0"
-            app:tint="@color/accent" />
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:src="@drawable/ic_kaliki_logo" />
 
+        <!-- App Name -->
         <TextView
             android:id="@+id/splash_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Kaliki"
-            android:textSize="32sp"
+            android:textSize="30sp"
             android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:letterSpacing="-0.02"
-            android:layout_marginTop="20dp"
-            android:alpha="0" />
+            android:textColor="#FFFFFF"
+            android:letterSpacing="0.02"
+            android:layout_marginTop="16dp" />
 
+        <!-- Tagline -->
         <TextView
             android:id="@+id/splash_tagline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Fast. Private. Secure."
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginTop="8dp"
-            android:alpha="0" />
+            android:textSize="13sp"
+            android:textColor="#9AA0A6"
+            android:layout_marginTop="6dp" />
     </LinearLayout>
 </FrameLayout>

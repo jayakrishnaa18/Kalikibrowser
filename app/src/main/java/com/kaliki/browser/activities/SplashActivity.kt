@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
 import android.widget.TextView
@@ -22,28 +24,27 @@ class SplashActivity : AppCompatActivity() {
         val text = findViewById<TextView>(R.id.splash_text)
         val tagline = findViewById<TextView>(R.id.splash_tagline)
 
-        // Start small and invisible
-        logo.scaleX = 0.3f
-        logo.scaleY = 0.3f
+        // Fast splash — logo appears instantly with quick scale-up
+        logo.scaleX = 0.5f
+        logo.scaleY = 0.5f
         logo.alpha = 0f
 
-        // Logo: spring bounce from small to full size
+        // Quick animation — 400ms total (Brave-like speed)
         logo.animate()
             .scaleX(1f).scaleY(1f).alpha(1f)
-            .setDuration(800)
-            .setInterpolator(OvershootInterpolator(2.5f))
+            .setDuration(400)
+            .setInterpolator(OvershootInterpolator(1.5f))
             .withEndAction {
-                // Text slides up and fades in
-                text.translationY = 40f
-                text.animate().alpha(1f).translationY(0f).setDuration(400)
-                    .withEndAction {
-                        // Tagline fades in
-                        tagline.animate().alpha(1f).setDuration(300).start()
-                    }
-                    .start()
+                text.animate().alpha(1f).translationY(0f).setDuration(200).start()
+                tagline.animate().alpha(1f).setStartDelay(100).setDuration(200).start()
             }
             .start()
 
+        text.translationY = 20f
+        text.alpha = 0f
+        tagline.alpha = 0f
+
+        // Navigate quickly — 800ms total (fast like Chrome)
         Handler(Looper.getMainLooper()).postDelayed({
             val feedManager = NewsFeedManager(this)
             val destination = if (feedManager.isInterestsSelected()) {
@@ -54,6 +55,6 @@ class SplashActivity : AppCompatActivity() {
             startActivity(destination)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()
-        }, 1800)
+        }, 800)
     }
 }
