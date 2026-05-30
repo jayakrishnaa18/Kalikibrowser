@@ -421,11 +421,10 @@ class MainActivity : AppCompatActivity() {
             itemView.findViewById<TextView>(R.id.news_title).text = news[i].title
             itemView.findViewById<TextView>(R.id.news_source).text = news[i].source
             itemView.findViewById<TextView>(R.id.news_category).text = news[i].category
-            val imgView = itemView.findViewById<ImageView>(R.id.news_image)
-            imgView.setBackgroundResource(R.drawable.shortcut_bg)
-            imgView.background.setTint(news[i].color)
+            // Load favicon for source
+            val faviconView = itemView.findViewById<ImageView>(R.id.news_favicon)
             if (news[i].imageUrl.isNotEmpty()) {
-                loadNewsImage(news[i].imageUrl, imgView, null)
+                loadImageAsync(news[i].imageUrl, faviconView)
             }
             itemView.setOnClickListener { navigateTo(news[i].url) }
             container.addView(itemView)
