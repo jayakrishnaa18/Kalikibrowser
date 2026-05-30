@@ -148,6 +148,16 @@
             <ImageButton android:id="@+id/find_close" android:layout_width="34dp" android:layout_height="34dp" android:src="@drawable/ic_close" android:background="?attr/selectableItemBackgroundBorderless" app:tint="@color/text_secondary" />
         </LinearLayout>
 
+        <!-- Suggestions RecyclerView (below URL bar) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/suggestions_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_secondary"
+            android:elevation="8dp"
+            android:visibility="gone"
+            android:paddingVertical="4dp" />
+
         <!-- Web Content -->
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh"
@@ -163,6 +173,18 @@
                     android:id="@+id/gecko_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
+
+                <!-- Gesture edge views for swipe navigation -->
+                <View
+                    android:id="@+id/gesture_left"
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="start" />
+                <View
+                    android:id="@+id/gesture_right"
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="end" />
 
                 <!-- New Tab Page -->
                 <ScrollView

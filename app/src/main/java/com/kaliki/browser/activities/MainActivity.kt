@@ -11,6 +11,8 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.*
 import android.print.PrintManager
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -34,6 +36,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.kaliki.browser.R
 import com.kaliki.browser.adapters.SimpleListAdapter
+import com.kaliki.browser.adapters.SuggestionsAdapter
 import com.kaliki.browser.adapters.TabAdapter
 import com.kaliki.browser.models.*
 import com.kaliki.browser.utils.*
@@ -253,6 +256,7 @@ class MainActivity : AppCompatActivity() {
                 (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
                 val text = urlEditText.text.toString().trim()
                 if (text.isNotEmpty()) { navigateTo(text); hideKeyboard() }
+                hideSuggestions()
                 true
             } else false
         }
@@ -264,7 +268,11 @@ class MainActivity : AppCompatActivity() {
                 true
             } else false
         }
-        urlEditText.setOnFocusChangeListener { _, hasFocus -> if (hasFocus) urlEditText.selectAll() }
+        urlEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) urlEditText.selectAll()
+            else hideSuggestions()
+        }
+        setupSearchSuggestions()
         btnBack.setOnClickListener { goBack() }
         btnForward.setOnClickListener { goForward() }
         btnHome.setOnClickListener { showNewTabPage() }
@@ -274,6 +282,7 @@ class MainActivity : AppCompatActivity() {
         swipeRefresh.isEnabled = false
         swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.accent))
         setupShortcuts()
+        setupGestures()
     }
 
     private fun setupShortcuts() {
@@ -626,6 +635,10 @@ class MainActivity : AppCompatActivity() {
                     val linkUri = element.linkUri
                     val srcUri = element.srcUri
                     when {
+                        element.type == ContentDelegate.ContextElement.TYPE_VIDEO ||
+                        (srcUri != null && (srcUri.contains(".mp4") || srcUri.contains(".webm") || srcUri.contains("video"))) -> {
+                            showVideoContextMenu(srcUri ?: linkUri ?: "")
+                        }
                         srcUri != null && element.type == ContentDelegate.ContextElement.TYPE_IMAGE -> {
                             showImageContextMenu(srcUri)
                         }
@@ -927,6 +940,93 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    private fun showVideoContextMenu(videoUrl: String) {
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetTheme)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_context_menu, null)
+        dialog.setContentView(view)
+        view.findViewById<TextView>(R.id.context_url).text = videoUrl
+        view.findViewById<TextView>(R.id.ctx_save_label)?.text = "Download video"
+        view.findViewById<LinearLayout>(R.id.ctx_open_new_tab).setOnClickListener { createNewTab(videoUrl); dialog.dismiss() }
+        view.findViewById<LinearLayout>(R.id.ctx_save).setOnClickListener {
+            downloadHelper.startDownload(videoUrl, null, "video/*")
+            showToast("Downloading video...")
+            dialog.dismiss()
+        }
+        view.findViewById<LinearLayout>(R.id.ctx_copy).setOnClickListener {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("url", videoUrl))
+            showToast("URL copied")
+            dialog.dismiss()
+        }
+        view.findViewById<LinearLayout>(R.id.ctx_share).setOnClickListener {
+            startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, videoUrl) }, "Share"))
+            dialog.dismiss()
+        }
+        dialog.show()
+    }
+
+    private fun downloadMediaFromPage() {
+        val session = currentSession()
+        if (session == null) { showToast("No page loaded"); return }
+        val tab = tabManager.currentTab() ?: return
+        val url = tab.url ?: ""
+
+        // Use JavaScript to detect video elements on the page
+        val detectScript = """
+            (function(){
+                var videos = document.querySelectorAll('video source, video[src]');
+                var meta = document.querySelector('meta[property="og:video"]');
+                var urls = [];
+                videos.forEach(function(v) { if(v.src) urls.push(v.src); if(v.currentSrc) urls.push(v.currentSrc); });
+                if(meta && meta.content) urls.push(meta.content);
+                var allVideos = document.querySelectorAll('video');
+                allVideos.forEach(function(v) { if(v.currentSrc) urls.push(v.currentSrc); });
+                if(urls.length > 0) {
+                    document.title = 'KALIKI_VIDEO:' + urls[0];
+                } else {
+                    document.title = 'KALIKI_VIDEO:NONE';
+                }
+            })();
+        """.trimIndent()
+        session.loadUri("javascript:void(${Uri.encode(detectScript)})")
+
+        // Check title after a short delay for result
+        Handler(Looper.getMainLooper()).postDelayed({
+            val currentTitle = tabManager.currentTab()?.title ?: ""
+            if (currentTitle.startsWith("KALIKI_VIDEO:") && !currentTitle.contains("NONE")) {
+                val videoUrl = currentTitle.removePrefix("KALIKI_VIDEO:")
+                showVideoContextMenu(videoUrl)
+            } else {
+                // Fallback: for YouTube pages, offer to open in external downloader
+                if (url.contains("youtube.com") || url.contains("youtu.be")) {
+                    val videoId = extractYouTubeVideoId(url)
+                    if (videoId != null) {
+                        val downloadUrl = "https://www.y2mate.com/youtube/$videoId"
+                        createNewTab(downloadUrl)
+                        showToast("Opening video downloader...")
+                    } else {
+                        showToast("No downloadable video found")
+                    }
+                } else {
+                    showToast("No downloadable video found on this page")
+                }
+            }
+        }, 500)
+    }
+
+    private fun extractYouTubeVideoId(url: String): String? {
+        val patterns = listOf(
+            Regex("v=([a-zA-Z0-9_-]{11})"),
+            Regex("youtu\\.be/([a-zA-Z0-9_-]{11})"),
+            Regex("embed/([a-zA-Z0-9_-]{11})")
+        )
+        for (p in patterns) {
+            val match = p.find(url)
+            if (match != null) return match.groupValues[1]
+        }
+        return null
+    }
+
     // =================== MENUS ===================
 
     private fun showMainMenu() {
@@ -944,6 +1044,7 @@ class MainActivity : AppCompatActivity() {
         view.findViewById<LinearLayout>(R.id.menu_find).setOnClickListener { showFindInPage(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_desktop).setOnClickListener { toggleDesktopMode(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_translate).setOnClickListener { translatePage(); dialog.dismiss() }
+        view.findViewById<LinearLayout>(R.id.menu_download_media).setOnClickListener { downloadMediaFromPage(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_add_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
         view.findViewById<LinearLayout>(R.id.menu_settings).setOnClickListener { openSettings(); dialog.dismiss() }
 
@@ -1330,6 +1431,120 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             showToast("Screenshot failed: ${e.message}")
         }
+    }
+
+    // =================== GESTURE NAVIGATION ===================
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupGestures() {
+        val gestureLeft = findViewById<View>(R.id.gesture_left)
+        val gestureRight = findViewById<View>(R.id.gesture_right)
+
+        var startX = 0f
+
+        gestureLeft.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> { startX = event.rawX; true }
+                MotionEvent.ACTION_UP -> {
+                    val dx = event.rawX - startX
+                    if (dx > 80) {
+                        tabManager.currentTab()?.session?.goBack()
+                    }
+                    true
+                }
+                else -> true
+            }
+        }
+
+        gestureRight.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> { startX = event.rawX; true }
+                MotionEvent.ACTION_UP -> {
+                    val dx = startX - event.rawX
+                    if (dx > 80) {
+                        tabManager.currentTab()?.session?.goForward()
+                    }
+                    true
+                }
+                else -> true
+            }
+        }
+    }
+
+    // =================== SMART SEARCH SUGGESTIONS ===================
+
+    private var searchJob: Thread? = null
+
+    private fun setupSearchSuggestions() {
+        urlEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s?.toString()?.trim() ?: ""
+                if (query.length < 2) { hideSuggestions(); return }
+                if (!urlEditText.hasFocus()) return
+                searchJob?.interrupt()
+                searchJob = Thread {
+                    try {
+                        Thread.sleep(200) // debounce
+                        val suggestions = fetchSuggestions(query)
+                        runOnUiThread { showSuggestions(suggestions) }
+                    } catch (_: InterruptedException) {}
+                }
+                searchJob?.start()
+            }
+        })
+    }
+
+    private fun fetchSuggestions(query: String): List<String> {
+        val results = mutableListOf<String>()
+
+        // Add history matches first
+        val historyMatches = historyManager.getAll()
+            .filter { it.title.contains(query, true) || it.url.contains(query, true) }
+            .take(3)
+            .map { it.title.ifEmpty { it.url } }
+        results.addAll(historyMatches)
+
+        // Fetch Google suggestions
+        try {
+            val url = "https://suggestqueries.google.com/complete/search?client=firefox&q=${Uri.encode(query)}"
+            val conn = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+            conn.connectTimeout = 2000
+            conn.readTimeout = 2000
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+            val json = conn.inputStream.bufferedReader().readText()
+            conn.disconnect()
+            // Parse: ["query",["suggestion1","suggestion2",...]]
+            val startIdx = json.indexOf(",[")
+            val endIdx = json.indexOf("]", startIdx + 2)
+            if (startIdx > 0 && endIdx > startIdx) {
+                val arr = json.substring(startIdx + 2, endIdx)
+                arr.split(",").forEach { s ->
+                    val clean = s.trim().trim('"')
+                    if (clean.isNotEmpty() && clean != query) results.add(clean)
+                }
+            }
+        } catch (_: Exception) {}
+
+        return results.distinct().take(8)
+    }
+
+    private fun showSuggestions(suggestions: List<String>) {
+        val rv = findViewById<RecyclerView>(R.id.suggestions_list)
+        if (suggestions.isEmpty()) { rv.visibility = View.GONE; return }
+        rv.visibility = View.VISIBLE
+        rv.layoutManager = LinearLayoutManager(this)
+        rv.adapter = SuggestionsAdapter(suggestions) { suggestion ->
+            urlEditText.setText(suggestion)
+            hideSuggestions()
+            navigateTo(suggestion)
+            hideKeyboard()
+        }
+    }
+
+    private fun hideSuggestions() {
+        findViewById<RecyclerView>(R.id.suggestions_list).visibility = View.GONE
     }
 
     // =================== LIFECYCLE ===================
