@@ -4,9 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -22,29 +19,20 @@ class SplashActivity : AppCompatActivity() {
 
         val logo = findViewById<ImageView>(R.id.splash_logo)
         val text = findViewById<TextView>(R.id.splash_text)
-        val tagline = findViewById<TextView>(R.id.splash_tagline)
+        val subtitle = findViewById<TextView>(R.id.splash_subtitle)
 
-        // Fast splash — logo appears instantly with quick scale-up
-        logo.scaleX = 0.5f
-        logo.scaleY = 0.5f
+        // Logo fades in (alpha 0 to 1) in 300ms — no bouncing, no scaling
         logo.alpha = 0f
-
-        // Quick animation — 400ms total (Brave-like speed)
         logo.animate()
-            .scaleX(1f).scaleY(1f).alpha(1f)
-            .setDuration(400)
-            .setInterpolator(OvershootInterpolator(1.5f))
-            .withEndAction {
-                text.animate().alpha(1f).translationY(0f).setDuration(200).start()
-                tagline.animate().alpha(1f).setStartDelay(100).setDuration(200).start()
-            }
+            .alpha(1f)
+            .setDuration(300)
             .start()
 
-        text.translationY = 20f
-        text.alpha = 0f
-        tagline.alpha = 0f
+        // Text appears instantly — no animation
+        text.alpha = 1f
+        subtitle.alpha = 1f
 
-        // Navigate quickly — 800ms total (fast like Chrome)
+        // Navigate after 600ms total (fast like Pixdoc/Chrome)
         Handler(Looper.getMainLooper()).postDelayed({
             val feedManager = NewsFeedManager(this)
             val destination = if (feedManager.isInterestsSelected()) {
@@ -55,6 +43,6 @@ class SplashActivity : AppCompatActivity() {
             startActivity(destination)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()
-        }, 800)
+        }, 600)
     }
 }
