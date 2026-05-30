@@ -556,9 +556,11 @@ class MainActivity : AppCompatActivity() {
                     isOnNtp = false
                 )
                 runOnUiThread {
-                    tabManager.addTab(tab)
-                    updateTabCount()
-                    showGeckoSession(newSession)
+                    if (!isActivityDestroyed) {
+                        tabManager.addTab(tab)
+                        updateTabCount()
+                        showGeckoSession(newSession)
+                    }
                 }
                 return GeckoResult.fromValue(newSession)
             }
@@ -1417,7 +1419,7 @@ class MainActivity : AppCompatActivity() {
     private fun showQrCode() {
         val tab = tabManager.currentTab()
         if (tab == null || tab.isOnNtp || tab.url == null) { showToast("No URL to generate QR"); return }
-        val url = tab.url!!
+        val url = tab.url ?: return
         val qrBitmap = generateQrCode(url, 512)
         if (qrBitmap == null) { showToast("Could not generate QR code"); return }
 
@@ -1780,7 +1782,7 @@ class MainActivity : AppCompatActivity() {
         tabManager.currentTab()?.session?.setActive(true)
         val tabData = tabManager.tabs
             .filter { !it.isOnNtp && it.url != null }
-            .map { mapOf("url" to it.url!!, "title" to it.title) }
+            .map { mapOf("url" to (it.url ?: ""), "title" to it.title) }
         val json = Gson().toJson(tabData)
         getSharedPreferences("kaliki_session", MODE_PRIVATE).edit()
             .putString("saved_tabs_json", json)

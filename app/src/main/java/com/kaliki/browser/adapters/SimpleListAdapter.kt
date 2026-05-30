@@ -40,7 +40,10 @@ class SimpleListAdapter(
         val host = try { Uri.parse(item.subtitle).host?.removePrefix("www.") ?: "" } catch (_: Exception) { "" }
         holder.icon.text = host.take(1).uppercase().ifEmpty { "?" }
 
-        // Load real favicon
+        // Load real favicon (with tag to prevent wrong image on recycled view)
+        holder.favicon.tag = host
+        holder.favicon.visibility = View.GONE
+        holder.icon.visibility = View.VISIBLE
         if (host.isNotEmpty()) {
             val faviconUrl = "https://www.google.com/s2/favicons?domain=$host&sz=32"
             Thread {
@@ -52,9 +55,12 @@ class SimpleListAdapter(
                     if (conn.responseCode == 200) {
                         val bitmap = BitmapFactory.decodeStream(conn.inputStream)
                         if (bitmap != null) holder.favicon.post {
-                            holder.favicon.setImageBitmap(bitmap)
-                            holder.favicon.visibility = View.VISIBLE
-                            holder.icon.visibility = View.GONE
+                            // Only set if view still shows same item (not recycled)
+                            if (holder.favicon.tag == host) {
+                                holder.favicon.setImageBitmap(bitmap)
+                                holder.favicon.visibility = View.VISIBLE
+                                holder.icon.visibility = View.GONE
+                            }
                         }
                     }
                     conn.disconnect()
