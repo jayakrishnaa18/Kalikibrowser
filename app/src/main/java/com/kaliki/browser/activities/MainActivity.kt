@@ -479,19 +479,24 @@ class MainActivity : AppCompatActivity() {
             override fun onFullScreen(session: GeckoSession, fullScreen: Boolean) {
                 runOnUiThread {
                     if (fullScreen) {
-                        // Enter fullscreen — hide toolbar & bottom bar, go immersive
+                        // Enter fullscreen — hide UI, immersive, allow landscape
                         findViewById<View>(R.id.toolbar).visibility = View.GONE
                         findViewById<View>(R.id.bottom_bar).visibility = View.GONE
                         window.decorView.systemUiVisibility = (
                             View.SYSTEM_UI_FLAG_FULLSCREEN or
                             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         )
+                        // Allow rotation to landscape for video
+                        requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR
                     } else {
-                        // Exit fullscreen — restore UI
+                        // Exit fullscreen — restore UI, lock to portrait
                         findViewById<View>(R.id.toolbar).visibility = View.VISIBLE
                         findViewById<View>(R.id.bottom_bar).visibility = View.VISIBLE
                         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                        requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                     }
                 }
             }
