@@ -364,15 +364,12 @@ class MainActivity : AppCompatActivity() {
                 itemView.findViewById<TextView>(R.id.news_title).text = newsItems[i].title
                 itemView.findViewById<TextView>(R.id.news_source).text = newsItems[i].source
                 itemView.findViewById<TextView>(R.id.news_category).text = newsItems[i].category
-                // Load source favicon + thumbnail using source name as domain hint
+                // Load source favicon only (no large thumbnail — RSS doesn't provide images)
                 val faviconView = itemView.findViewById<ImageView>(R.id.news_favicon)
-                val thumbView = itemView.findViewById<ImageView>(R.id.news_image)
-                // Convert source name to likely domain (e.g. "BBC News" → "bbc.com", "Reuters" → "reuters.com")
                 val sourceName = newsItems[i].source.lowercase()
                     .replace(" news", "").replace("the ", "").replace(" ", "")
                 val sourceDomain = "$sourceName.com"
                 loadImageAsync("https://www.google.com/s2/favicons?domain=$sourceDomain&sz=32", faviconView)
-                loadImageAsync("https://www.google.com/s2/favicons?domain=$sourceDomain&sz=128", thumbView)
                 itemView.setOnClickListener { navigateTo(newsItems[i].url) }
                 container.addView(itemView)
 
