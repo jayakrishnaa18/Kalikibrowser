@@ -80,6 +80,11 @@
         </activity>
 
         <activity
+            android:name=".activities.InterestsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.KalikiBrowser" />
+
+        <activity
             android:name=".activities.SettingsActivity"
             android:exported="false"
             android:theme="@style/Theme.KalikiBrowser" />

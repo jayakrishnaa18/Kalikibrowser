@@ -330,6 +330,48 @@ class MainActivity : AppCompatActivity() {
         val container = findViewById<LinearLayout>(R.id.news_feed_container)
         container.removeAllViews()
 
+        // Show loading indicator
+        val loading = TextView(this).apply {
+            text = "Loading your news..."
+            textSize = 14f
+            setTextColor(getColor(R.color.dark_text_secondary))
+            setPadding(32, 32, 32, 32)
+        }
+        container.addView(loading)
+
+        val feedManager = NewsFeedManager(this)
+        feedManager.fetchNews(feedManager.getUserInterests()) { newsItems ->
+            container.removeAllViews()
+            if (newsItems.isEmpty()) {
+                addStaticNews(container)
+                return@fetchNews
+            }
+            for (i in newsItems.indices) {
+                val itemView = layoutInflater.inflate(R.layout.item_news, container, false)
+                itemView.findViewById<TextView>(R.id.news_title).text = newsItems[i].title
+                itemView.findViewById<TextView>(R.id.news_source).text = newsItems[i].source
+                itemView.findViewById<TextView>(R.id.news_category).text = newsItems[i].category
+                itemView.setOnClickListener { navigateTo(newsItems[i].url) }
+                container.addView(itemView)
+
+                // Ad slot every 4 items
+                if (i == 3 || i == 8) {
+                    val adFrame = FrameLayout(this).apply {
+                        id = View.generateViewId()
+                        tag = "ad_slot_$i"
+                        layoutParams = LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                        )
+                    }
+                    container.addView(adFrame)
+                }
+            }
+            loadNativeAds(container)
+        }
+    }
+
+    private fun addStaticNews(container: LinearLayout) {
         fun favicon(domain: String) = "https://www.google.com/s2/favicons?domain=$domain&sz=128"
 
         val news = listOf(

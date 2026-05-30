@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.kaliki.browser.R
+import com.kaliki.browser.utils.NewsFeedManager
 
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +45,13 @@ class SplashActivity : AppCompatActivity() {
             .start()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, MainActivity::class.java))
+            val feedManager = NewsFeedManager(this)
+            val destination = if (feedManager.isInterestsSelected()) {
+                Intent(this, MainActivity::class.java)
+            } else {
+                Intent(this, InterestsActivity::class.java)
+            }
+            startActivity(destination)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()
         }, 1800)
