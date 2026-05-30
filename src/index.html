@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaliki Browser</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Title bar -->
+  <div id="titlebar">
+    <div id="titlebar-drag">
+      <div id="app-icon">⚡</div>
+      <span id="app-title">Kaliki Browser</span>
+    </div>
+    <div id="window-controls">
+      <button id="btn-minimize" title="Minimize">─</button>
+      <button id="btn-maximize" title="Maximize">□</button>
+      <button id="btn-close" title="Close">✕</button>
+    </div>
+  </div>
+
+  <!-- Tab bar -->
+  <div id="tabbar">
+    <div id="tabs-container"></div>
+    <button id="btn-new-tab" title="New Tab (Ctrl+T)">+</button>
+  </div>
+
+  <!-- Navigation bar -->
+  <div id="navbar">
+    <div id="nav-buttons">
+      <button id="btn-back" title="Back (Alt+Left)" disabled>◀</button>
+      <button id="btn-forward" title="Forward (Alt+Right)" disabled>▶</button>
+      <button id="btn-refresh" title="Refresh (Ctrl+R)">↻</button>
+      <button id="btn-home" title="Home">🏠</button>
+    </div>
+    <div id="url-container">
+      <span id="security-icon">🔒</span>
+      <input id="url-bar" type="text" placeholder="Search or enter URL" spellcheck="false" autocomplete="off">
+      <button id="btn-bookmark" title="Bookmark this page">☆</button>
+    </div>
+    <div id="toolbar-buttons">
+      <button id="btn-shield" title="Ad Blocker">🛡️</button>
+      <button id="btn-downloads" title="Downloads">⬇</button>
+      <button id="btn-extensions" title="Extensions">🧩</button>
+      <button id="btn-menu" title="Menu">☰</button>
+    </div>
+  </div>
+
+  <!-- Find bar (hidden by default) -->
+  <div id="findbar" class="hidden">
+    <input id="find-input" type="text" placeholder="Find in page...">
+    <span id="find-count">0/0</span>
+    <button id="find-prev">▲</button>
+    <button id="find-next">▼</button>
+    <button id="find-close">✕</button>
+  </div>
+
+  <!-- Browser content area -->
+  <div id="browser-content">
+    <!-- Sidebar (bookmarks) -->
+    <div id="sidebar" class="hidden">
+      <div id="sidebar-header">
+        <h3>Bookmarks</h3>
+        <button id="sidebar-close">✕</button>
+      </div>
+      <div id="sidebar-content"></div>
+    </div>
+
+    <!-- Webview container -->
+    <div id="webview-container"></div>
+  </div>
+
+  <!-- Context menu -->
+  <div id="context-menu" class="hidden">
+    <div class="menu-item" data-action="back">← Back</div>
+    <div class="menu-item" data-action="forward">→ Forward</div>
+    <div class="menu-item" data-action="refresh">↻ Reload</div>
+    <div class="menu-separator"></div>
+    <div class="menu-item" data-action="view-source">View Page Source</div>
+    <div class="menu-item" data-action="devtools">Inspect Element</div>
+    <div class="menu-separator"></div>
+    <div class="menu-item" data-action="print">Print...</div>
+  </div>
+
+  <!-- Dropdown menu -->
+  <div id="dropdown-menu" class="hidden">
+    <div class="menu-item" data-action="new-tab">New Tab <span class="shortcut">Ctrl+T</span></div>
+    <div class="menu-item" data-action="new-private">New Private Window <span class="shortcut">Ctrl+Shift+N</span></div>
+    <div class="menu-separator"></div>
+    <div class="menu-item" data-action="history">History <span class="shortcut">Ctrl+H</span></div>
+    <div class="menu-item" data-action="bookmarks">Bookmarks <span class="shortcut">Ctrl+B</span></div>
+    <div class="menu-item" data-action="downloads-page">Downloads <span class="shortcut">Ctrl+J</span></div>
+    <div class="menu-separator"></div>
+    <div class="menu-item" data-action="zoom-in">Zoom In <span class="shortcut">Ctrl++</span></div>
+    <div class="menu-item" data-action="zoom-out">Zoom Out <span class="shortcut">Ctrl+-</span></div>
+    <div class="menu-item" data-action="zoom-reset">Reset Zoom <span class="shortcut">Ctrl+0</span></div>
+    <div class="menu-separator"></div>
+    <div class="menu-item" data-action="fullscreen">Fullscreen <span class="shortcut">F11</span></div>
+    <div class="menu-item" data-action="find">Find in Page <span class="shortcut">Ctrl+F</span></div>
+    <div class="menu-item" data-action="print-menu">Print <span class="shortcut">Ctrl+P</span></div>
+    <div class="menu-separator"></div>
+    <div class="menu-item" data-action="view-source-menu">View Source <span class="shortcut">Ctrl+U</span></div>
+    <div class="menu-item" data-action="devtools-menu">Developer Tools <span class="shortcut">F12</span></div>
+    <div class="menu-separator"></div>
+    <div class="menu-item" data-action="settings">Settings</div>
+    <div class="menu-item" data-action="about">About Kaliki Browser</div>
+  </div>
+
+  <!-- Shield popup -->
+  <div id="shield-popup" class="hidden">
+    <div class="popup-header">
+      <span>🛡️ Ad Blocker</span>
+      <label class="toggle">
+        <input type="checkbox" id="adblock-toggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="popup-body">
+      <p id="blocked-count">Ads blocked: 0</p>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

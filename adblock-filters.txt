@@ -1,0 +1,113 @@
+! Kaliki Browser Ad Block Filters
+! Based on EasyList and common ad domains
+
+! --- Major ad networks ---
+||doubleclick.net^
+||googlesyndication.com^
+||googleadservices.com^
+||google-analytics.com^
+||googletagmanager.com^
+||googletagservices.com^
+||adservice.google.com^
+||pagead2.googlesyndication.com^
+
+! --- Facebook/Meta tracking ---
+||facebook.net/tr^
+||connect.facebook.net^
+||pixel.facebook.com^
+
+! --- Generic ad domains ---
+||ads.yahoo.com^
+||adserver.
+||ad.doubleclick.net^
+||static.ads-twitter.com^
+||ads.linkedin.com^
+
+! --- Analytics/Tracking ---
+||analytics.
+||tracker.
+||tracking.
+||pixel.
+||beacon.
+||telemetry.
+||metrics.
+
+! --- Common ad servers ---
+||adnxs.com^
+||adsrvr.org^
+||adform.net^
+||adroll.com^
+||advertising.com^
+||outbrain.com^
+||taboola.com^
+||mgid.com^
+||revcontent.com^
+||criteo.com^
+||criteo.net^
+||pubmatic.com^
+||openx.net^
+||rubiconproject.com^
+||casalemedia.com^
+||moatads.com^
+||quantserve.com^
+||scorecardresearch.com^
+||amazon-adsystem.com^
+||adsystem.com^
+||adtechus.com^
+||serving-sys.com^
+||exponential.com^
+||undertone.com^
+||adblade.com^
+||bidswitch.net^
+||contextweb.com^
+||liadm.com^
+||mathtag.com^
+||mookie1.com^
+||nexac.com^
+||rlcdn.com^
+||turn.com^
+
+! --- Popup/Popunder ---
+||popads.net^
+||popcash.net^
+||popunder.net^
+
+! --- Mining ---
+||coinhive.com^
+||coin-hive.com^
+||jsecoin.com^
+||cryptoloot.pro^
+||minero.cc^
+
+! --- Social annoyances ---
+||platform.twitter.com/widgets^
+||connect.facebook.net/en_US/sdk^
+
+! --- Video ads ---
+||imasdk.googleapis.com^
+||securepubads.g.doubleclick.net^
+
+! --- Mobile ad SDKs (also block on desktop) ---
+||admob.com^
+||unity3d.com/ads^
+||applovin.com^
+||vungle.com^
+||chartboost.com^
+||inmobi.com^
+||startapp.com^
+||mopub.com^
+
+! --- Notification spam ---
+||push.
+||pushnotifications.
+||onesignal.com^
+||pushwoosh.com^
+||cleverpush.com^
+
+! --- Miscellaneous ---
+||hotjar.com^
+||fullstory.com^
+||mouseflow.com^
+||crazyegg.com^
+||luckyorange.com^
+||inspectlet.com^
