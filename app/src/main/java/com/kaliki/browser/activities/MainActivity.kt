@@ -364,6 +364,14 @@ class MainActivity : AppCompatActivity() {
                 itemView.findViewById<TextView>(R.id.news_title).text = newsItems[i].title
                 itemView.findViewById<TextView>(R.id.news_source).text = newsItems[i].source
                 itemView.findViewById<TextView>(R.id.news_category).text = newsItems[i].category
+                // Load source favicon + thumbnail
+                val faviconView = itemView.findViewById<ImageView>(R.id.news_favicon)
+                val thumbView = itemView.findViewById<ImageView>(R.id.news_image)
+                val domain = try { Uri.parse(newsItems[i].url).host ?: "" } catch (_: Exception) { "" }
+                if (domain.isNotEmpty()) {
+                    loadImageAsync("https://www.google.com/s2/favicons?domain=$domain&sz=32", faviconView)
+                    loadImageAsync("https://www.google.com/s2/favicons?domain=$domain&sz=128", thumbView)
+                }
                 itemView.setOnClickListener { navigateTo(newsItems[i].url) }
                 container.addView(itemView)
 
@@ -1721,4 +1729,21 @@ class MainActivity : AppCompatActivity() {
     private fun hideKeyboard() { (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(urlEditText.windowToken, 0); urlEditText.clearFocus(); ntpSearch.clearFocus() }
     private fun showKeyboard(view: View) { (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(view, InputMethodManager.SHOW_IMPLICIT) }
     private fun showToast(msg: String) { Snackbar.make(geckoView, msg, Snackbar.LENGTH_SHORT).show() }
+
+    private fun loadImageAsync(url: String, imageView: ImageView) {
+        Thread {
+            try {
+                val conn = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+                conn.connectTimeout = 3000; conn.readTimeout = 3000
+                conn.instanceFollowRedirects = true
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                conn.connect()
+                if (conn.responseCode == 200) {
+                    val bitmap = android.graphics.BitmapFactory.decodeStream(conn.inputStream)
+                    if (bitmap != null) runOnUiThread { imageView.setImageBitmap(bitmap) }
+                }
+                conn.disconnect()
+            } catch (_: Exception) {}
+        }.start()
+    }
 }
