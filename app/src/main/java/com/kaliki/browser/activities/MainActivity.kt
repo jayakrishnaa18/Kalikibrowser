@@ -914,28 +914,23 @@ class MainActivity : AppCompatActivity() {
         val url = resolveUrl(input)
 
         val currentTab = tabManager.currentTab()
-        if (currentTab == null) {
+
+        // If NTP is visible OR tab is marked as NTP — ALWAYS create fresh
+        val onHomePage = newTabPage.visibility == View.VISIBLE ||
+                         currentTab == null ||
+                         currentTab.isOnNtp
+
+        if (onHomePage) {
+            // Remove current NTP tab if exists
+            if (currentTab != null) {
+                try { currentTab.session.close() } catch (_: Exception) {}
+                tabManager.removeTab(currentTab)
+            }
+            // Create completely fresh tab with fresh session
             createNewTab(url)
-        } else if (currentTab.isOnNtp) {
-            // CLOSE old session completely and create fresh one
-            // This is the ONLY way to guarantee no old page content shows
-            try { geckoView.releaseSession() } catch (_: Exception) {}
-            currentTab.session.close()
-            val freshSession = createGeckoSession()
-            currentTab.session = freshSession
-            currentTab.url = url
-            currentTab.title = "Loading..."
-            currentTab.isOnNtp = false
-            geckoView.setSession(freshSession)
-            geckoView.visibility = View.VISIBLE
-            newTabPage.visibility = View.GONE
-            freshSession.loadUri(url)
-            progressBar.visibility = View.VISIBLE
-            urlEditText.setText(url)
         } else {
-            // Already browsing — load in same session (keeps history)
-            currentTab.url = url
-            currentTab.isOnNtp = false
+            // Already browsing a page — load in same session (keeps back history)
+            currentTab!!.url = url
             currentTab.session.loadUri(url)
             urlEditText.setText(url)
         }
