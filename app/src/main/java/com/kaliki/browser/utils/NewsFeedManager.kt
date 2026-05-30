@@ -49,7 +49,7 @@ class NewsFeedManager(private val context: Context) {
             items.add(
                 NewsItem(
                     title = title,
-                    source = "$source - ${category.replaceFirstChar { it.uppercase() }}",
+                    source = source,
                     url = link,
                     category = category.replaceFirstChar { it.uppercase() }
                 )

@@ -21,10 +21,13 @@
 
         <TextView
             android:id="@+id/interest_icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:gravity="center"
-            android:textSize="18sp" />
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:background="@drawable/shortcut_bg" />
 
         <TextView
             android:id="@+id/interest_name"

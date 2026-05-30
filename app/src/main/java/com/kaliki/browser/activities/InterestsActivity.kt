@@ -45,18 +45,18 @@ class InterestsActivity : AppCompatActivity() {
     data class InterestItem(val name: String, val icon: String)
 
     private val interests = listOf(
-        InterestItem("Technology", "💻"),
-        InterestItem("Sports", "⚽"),
-        InterestItem("Business", "💼"),
-        InterestItem("Entertainment", "🎬"),
-        InterestItem("Science", "🔬"),
-        InterestItem("Health", "🏥"),
-        InterestItem("Gaming", "🎮"),
-        InterestItem("World News", "🌍"),
-        InterestItem("Crypto", "₿"),
-        InterestItem("AI", "🤖"),
-        InterestItem("Space", "🚀"),
-        InterestItem("Auto", "🚗")
+        InterestItem("Technology", "TECH"),
+        InterestItem("Sports", "SPT"),
+        InterestItem("Business", "BIZ"),
+        InterestItem("Entertainment", "ENT"),
+        InterestItem("Science", "SCI"),
+        InterestItem("Health", "MED"),
+        InterestItem("Gaming", "GAME"),
+        InterestItem("World News", "WRLD"),
+        InterestItem("Crypto", "BTC"),
+        InterestItem("AI", "AI"),
+        InterestItem("Space", "NASA"),
+        InterestItem("Auto", "AUTO")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {

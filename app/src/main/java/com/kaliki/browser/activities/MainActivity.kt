@@ -604,24 +604,29 @@ class MainActivity : AppCompatActivity() {
             override fun onFullScreen(session: GeckoSession, fullScreen: Boolean) {
                 runOnUiThread {
                     if (fullScreen) {
-                        // Enter fullscreen — hide UI, immersive, allow landscape
+                        // Force landscape + hide everything
+                        requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                         findViewById<View>(R.id.toolbar).visibility = View.GONE
                         findViewById<View>(R.id.bottom_bar).visibility = View.GONE
+                        findViewById<View>(R.id.suggestions_list).visibility = View.GONE
                         window.decorView.systemUiVisibility = (
                             View.SYSTEM_UI_FLAG_FULLSCREEN or
                             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
                             View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                             View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         )
-                        // Allow rotation to landscape for video
-                        requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR
                     } else {
-                        // Exit fullscreen — restore UI, lock to portrait
+                        // Restore portrait + show UI
+                        requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                         findViewById<View>(R.id.toolbar).visibility = View.VISIBLE
                         findViewById<View>(R.id.bottom_bar).visibility = View.VISIBLE
                         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-                        requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        // After a delay, allow sensor again
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        }, 500)
                     }
                 }
             }
@@ -857,11 +862,18 @@ class MainActivity : AppCompatActivity() {
 
         val currentTab = tabManager.currentTab()
         if (currentTab != null && currentTab.isOnNtp) {
-            // Reconnect session to view and load
+            // Create fresh session to avoid showing old page content
+            try { geckoView.releaseSession() } catch (_: Exception) {}
+            currentTab.session.close()
+            val freshSession = createGeckoSession()
+            currentTab.session = freshSession
             currentTab.url = url
             currentTab.title = "Loading..."
-            showGeckoSession(currentTab.session)
-            currentTab.session.loadUri(url)
+            currentTab.isOnNtp = false
+            geckoView.setSession(freshSession)
+            newTabPage.visibility = View.GONE
+            geckoView.visibility = View.VISIBLE
+            freshSession.loadUri(url)
         } else if (currentTab != null) {
             currentTab.url = url
             currentTab.isOnNtp = false
