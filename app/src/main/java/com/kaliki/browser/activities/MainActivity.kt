@@ -364,14 +364,15 @@ class MainActivity : AppCompatActivity() {
                 itemView.findViewById<TextView>(R.id.news_title).text = newsItems[i].title
                 itemView.findViewById<TextView>(R.id.news_source).text = newsItems[i].source
                 itemView.findViewById<TextView>(R.id.news_category).text = newsItems[i].category
-                // Load source favicon + thumbnail
+                // Load source favicon + thumbnail using source name as domain hint
                 val faviconView = itemView.findViewById<ImageView>(R.id.news_favicon)
                 val thumbView = itemView.findViewById<ImageView>(R.id.news_image)
-                val domain = try { Uri.parse(newsItems[i].url).host ?: "" } catch (_: Exception) { "" }
-                if (domain.isNotEmpty()) {
-                    loadImageAsync("https://www.google.com/s2/favicons?domain=$domain&sz=32", faviconView)
-                    loadImageAsync("https://www.google.com/s2/favicons?domain=$domain&sz=128", thumbView)
-                }
+                // Convert source name to likely domain (e.g. "BBC News" → "bbc.com", "Reuters" → "reuters.com")
+                val sourceName = newsItems[i].source.lowercase()
+                    .replace(" news", "").replace("the ", "").replace(" ", "")
+                val sourceDomain = "$sourceName.com"
+                loadImageAsync("https://www.google.com/s2/favicons?domain=$sourceDomain&sz=32", faviconView)
+                loadImageAsync("https://www.google.com/s2/favicons?domain=$sourceDomain&sz=128", thumbView)
                 itemView.setOnClickListener { navigateTo(newsItems[i].url) }
                 container.addView(itemView)
 
@@ -869,25 +870,19 @@ class MainActivity : AppCompatActivity() {
         val url = resolveUrl(input)
 
         val currentTab = tabManager.currentTab()
-        if (currentTab != null && currentTab.isOnNtp) {
-            // Create fresh session to avoid showing old page content
-            try { geckoView.releaseSession() } catch (_: Exception) {}
-            currentTab.session.close()
-            val freshSession = createGeckoSession()
-            currentTab.session = freshSession
-            currentTab.url = url
-            currentTab.title = "Loading..."
-            currentTab.isOnNtp = false
-            geckoView.setSession(freshSession)
-            newTabPage.visibility = View.GONE
-            geckoView.visibility = View.VISIBLE
-            freshSession.loadUri(url)
-        } else if (currentTab != null) {
+        if (currentTab == null) {
+            createNewTab(url)
+        } else if (currentTab.isOnNtp) {
+            // ALWAYS create fresh tab when navigating from home
+            // This guarantees no old page content shows
+            tabManager.removeTab(currentTab)
+            try { currentTab.session.close() } catch (_: Exception) {}
+            createNewTab(url)
+        } else {
+            // Already browsing — load in same session (keeps history)
             currentTab.url = url
             currentTab.isOnNtp = false
             currentTab.session.loadUri(url)
-        } else {
-            createNewTab(url)
         }
         hideKeyboard()
     }
