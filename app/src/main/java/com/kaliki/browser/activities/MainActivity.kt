@@ -142,8 +142,7 @@ class MainActivity : AppCompatActivity() {
                 .antiTracking(
                     ContentBlocking.AntiTracking.DEFAULT or
                     ContentBlocking.AntiTracking.CRYPTOMINING or
-                    ContentBlocking.AntiTracking.FINGERPRINTING or
-                    ContentBlocking.AntiTracking.CONTENT
+                    ContentBlocking.AntiTracking.FINGERPRINTING
                 )
                 .safeBrowsing(ContentBlocking.SafeBrowsing.DEFAULT)
                 .enhancedTrackingProtectionLevel(ContentBlocking.EtpLevel.STRICT)
@@ -396,6 +395,15 @@ class MainActivity : AppCompatActivity() {
                     return GeckoResult.fromValue(AllowOrDeny.DENY)
                 }
 
+                // Fix Google redirect notice — extract actual URL
+                if (url.contains("google.com/url?") || url.contains("google.co.in/url?")) {
+                    val actualUrl = Uri.parse(url).getQueryParameter("q") ?: Uri.parse(url).getQueryParameter("url")
+                    if (actualUrl != null && actualUrl.startsWith("http")) {
+                        session.loadUri(actualUrl)
+                        return GeckoResult.fromValue(AllowOrDeny.DENY)
+                    }
+                }
+
                 return GeckoResult.fromValue(AllowOrDeny.ALLOW)
             }
 
@@ -466,6 +474,26 @@ class MainActivity : AppCompatActivity() {
             override fun onTitleChange(session: GeckoSession, title: String?) {
                 val tab = findTabBySession(session) ?: return
                 tab.title = title ?: "Untitled"
+            }
+
+            override fun onFullScreen(session: GeckoSession, fullScreen: Boolean) {
+                runOnUiThread {
+                    if (fullScreen) {
+                        // Enter fullscreen — hide toolbar & bottom bar, go immersive
+                        findViewById<View>(R.id.toolbar).visibility = View.GONE
+                        findViewById<View>(R.id.bottom_bar).visibility = View.GONE
+                        window.decorView.systemUiVisibility = (
+                            View.SYSTEM_UI_FLAG_FULLSCREEN or
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        )
+                    } else {
+                        // Exit fullscreen — restore UI
+                        findViewById<View>(R.id.toolbar).visibility = View.VISIBLE
+                        findViewById<View>(R.id.bottom_bar).visibility = View.VISIBLE
+                        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                    }
+                }
             }
 
             override fun onExternalResponse(session: GeckoSession, response: WebResponse) {

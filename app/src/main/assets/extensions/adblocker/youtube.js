@@ -36,14 +36,15 @@
             );
             if (skip) { skip.click(); return; }
 
-            // Fast forward the ad
-            if (video.readyState >= 3 && video.duration > 0) {
-                video.currentTime = video.duration;
-                video.playbackRate = 16;
+            // Jump to end of ad (no playbackRate change — avoids blank screen)
+            if (video.readyState >= 2 && isFinite(video.duration) && video.duration > 0.5) {
+                video.currentTime = video.duration - 0.01;
             }
+            // Mute ad audio
+            video.muted = true;
         } else {
-            // Reset playback rate for normal content
-            if (video.playbackRate > 1) video.playbackRate = 1;
+            // Unmute for real content
+            if (video.muted) video.muted = false;
         }
 
         // Remove overlay ads and promoted content
@@ -77,12 +78,12 @@
                 var target = m.target;
                 if (target.classList && target.classList.contains('ad-showing')) {
                     var video = document.querySelector('video');
-                    if (video && video.readyState >= 3 && video.duration > 0) {
-                        video.currentTime = video.duration;
-                        video.playbackRate = 16;
-                    }
                     var skip = document.querySelector('.ytp-skip-ad-button, .ytp-ad-skip-button-modern');
-                    if (skip) skip.click();
+                    if (skip) { skip.click(); return; }
+                    if (video && video.readyState >= 2 && isFinite(video.duration) && video.duration > 0.5) {
+                        video.currentTime = video.duration - 0.01;
+                        video.muted = true;
+                    }
                 }
             }
         }
