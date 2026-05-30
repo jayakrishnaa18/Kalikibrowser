@@ -2,25 +2,32 @@ package com.kaliki.browser.activities
 
 import android.os.Bundle
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.kaliki.browser.R
+import com.kaliki.browser.utils.PasswordManager
 import com.kaliki.browser.utils.PrefsManager
 
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var prefsManager: PrefsManager
+    private lateinit var passwordManager: PasswordManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
         prefsManager = PrefsManager(this)
+        passwordManager = PasswordManager(this)
 
         findViewById<ImageButton>(R.id.btn_back_settings).setOnClickListener { finish() }
 
         setupToggles()
         setupSearchEngine()
+        setupPasswords()
+        setupExtensions()
+        setupSync()
         setupClearData()
         setupAbout()
     }
@@ -88,9 +95,66 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupPasswords() {
+        findViewById<LinearLayout>(R.id.section_passwords).setOnClickListener {
+            showSavedPasswords()
+        }
+        val passwordCount = passwordManager.getAllCredentials().size
+        findViewById<TextView>(R.id.passwords_count).text = "$passwordCount saved"
+    }
+
+    private fun showSavedPasswords() {
+        val credentials = passwordManager.getAllCredentials()
+        if (credentials.isEmpty()) {
+            Toast.makeText(this, "No saved passwords", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val items = credentials.map { "${it.domain} - ${it.username}" }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Saved Passwords")
+            .setItems(items) { _, which ->
+                val cred = credentials[which]
+                AlertDialog.Builder(this)
+                    .setTitle(cred.domain)
+                    .setMessage("Username: ${cred.username}\n\nDelete this password?")
+                    .setPositiveButton("Delete") { _, _ ->
+                        passwordManager.removeCredential(cred.domain, cred.username)
+                        Toast.makeText(this, "Password deleted", Toast.LENGTH_SHORT).show()
+                        setupPasswords() // Refresh count
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+            .setNegativeButton("Close", null)
+            .setNeutralButton("Clear All") { _, _ ->
+                AlertDialog.Builder(this)
+                    .setTitle("Clear All Passwords?")
+                    .setMessage("This cannot be undone.")
+                    .setPositiveButton("Clear") { _, _ ->
+                        passwordManager.clearAll()
+                        Toast.makeText(this, "All passwords cleared", Toast.LENGTH_SHORT).show()
+                        setupPasswords()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+            .show()
+    }
+
+    private fun setupExtensions() {
+        val extensionsList = findViewById<TextView>(R.id.extensions_list)
+        extensionsList.text = "Ad Blocker (Built-in) - Active"
+    }
+
+    private fun setupSync() {
+        findViewById<LinearLayout>(R.id.section_sync).setOnClickListener {
+            Toast.makeText(this, "Sync coming soon! Stay tuned.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun setupClearData() {
         findViewById<Button>(R.id.btn_clear_cache).setOnClickListener {
-            // GeckoView manages its own cache - clear via shared prefs flag
             getSharedPreferences("kaliki_prefs", MODE_PRIVATE).edit()
                 .putBoolean("clear_cache_pending", true).apply()
             Toast.makeText(this, "Cache will be cleared on next launch", Toast.LENGTH_SHORT).show()

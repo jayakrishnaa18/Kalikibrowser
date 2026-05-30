@@ -7,12 +7,13 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.kaliki.browser.R
 import com.kaliki.browser.models.BrowserTab
 
 class TabAdapter(
-    private val tabs: List<BrowserTab>,
+    private val tabs: MutableList<BrowserTab>,
     private val onTabClick: (Int) -> Unit,
     private val onTabClose: (BrowserTab) -> Unit
 ) : RecyclerView.Adapter<TabAdapter.ViewHolder>() {
@@ -40,15 +41,35 @@ class TabAdapter(
         if (tab.thumbnail != null) {
             holder.thumbnail.setImageBitmap(tab.thumbnail)
             holder.thumbnail.visibility = View.VISIBLE
-            holder.urlContainer.visibility = View.GONE
         } else {
-            holder.thumbnail.visibility = View.GONE
-            holder.urlContainer.visibility = View.VISIBLE
+            holder.thumbnail.setImageDrawable(null)
+            holder.thumbnail.visibility = View.VISIBLE // still show with bg color
         }
+
+        // URL container always visible at bottom
+        holder.urlContainer.visibility = View.VISIBLE
 
         holder.itemView.setOnClickListener { onTabClick(position) }
         holder.closeBtn.setOnClickListener { onTabClose(tab) }
     }
 
     override fun getItemCount() = tabs.size
+
+    /**
+     * Attach swipe-to-close functionality to a RecyclerView
+     */
+    fun attachSwipeToClose(recyclerView: RecyclerView) {
+        val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                if (position in tabs.indices) {
+                    val tab = tabs[position]
+                    onTabClose(tab)
+                }
+            }
+        }
+        ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerView)
+    }
 }

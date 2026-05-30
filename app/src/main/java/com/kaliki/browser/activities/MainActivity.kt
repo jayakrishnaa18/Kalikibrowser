@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var historyManager: HistoryManager
     private lateinit var downloadHelper: DownloadHelper
     private lateinit var prefsManager: PrefsManager
+    private lateinit var passwordManager: PasswordManager
 
     private var isIncognito = false
     private var blockedCount = 0
@@ -132,6 +133,7 @@ class MainActivity : AppCompatActivity() {
         bookmarkManager = BookmarkManager(this)
         historyManager = HistoryManager(this)
         downloadHelper = DownloadHelper(this)
+        passwordManager = PasswordManager(this)
     }
 
     private fun initGeckoRuntime() {
@@ -160,6 +162,70 @@ class MainActivity : AppCompatActivity() {
             { ext -> android.util.Log.d("Kaliki", "Ad blocker extension loaded: ${ext?.id}") },
             { e -> android.util.Log.e("Kaliki", "Extension failed to load: $e") }
         )
+
+        // Setup autofill storage delegate for password manager
+        setupAutocompleteDelegate()
+    }
+
+    private fun setupAutocompleteDelegate() {
+        // Password autofill is handled via JavaScript injection on page load
+        // The PasswordManager stores credentials and offers to fill them
+        android.util.Log.d("Kaliki", "Password manager initialized with autofill support")
+    }
+
+    /**
+     * Injects autofill script to detect login forms and offer to save/fill credentials
+     */
+    private fun injectPasswordAutofill(session: GeckoSession, url: String) {
+        if (url.startsWith("about:") || url.isEmpty()) return
+        val domain = passwordManager.extractDomain(url)
+        val credentials = passwordManager.getCredentialsForDomain(url)
+
+        if (credentials.isNotEmpty()) {
+            val cred = credentials.first()
+            val safeUser = cred.username.replace("\\", "\\\\").replace("'", "\\'")
+            val safePass = cred.password.replace("\\", "\\\\").replace("'", "\\'")
+            // Offer to fill saved credentials
+            runOnUiThread {
+                Snackbar.make(geckoView, "Autofill login for $domain?", Snackbar.LENGTH_LONG)
+                    .setAction("Fill") {
+                        val fillScript = "(function(){var inputs=document.querySelectorAll('input');" +
+                            "for(var i=0;i<inputs.length;i++){var input=inputs[i];" +
+                            "var type=(input.type||'').toLowerCase();" +
+                            "var name=(input.name||input.id||'').toLowerCase();" +
+                            "if(type==='email'||(type==='text'&&(name.includes('user')||name.includes('email')||name.includes('login')))){" +
+                            "input.value='$safeUser';input.dispatchEvent(new Event('input',{bubbles:true}));}" +
+                            "else if(type==='password'){" +
+                            "input.value='$safePass';input.dispatchEvent(new Event('input',{bubbles:true}));}}})();"
+                        session.loadUri("javascript:void(${Uri.encode(fillScript)})")
+                    }
+                    .show()
+            }
+        }
+
+        // Inject form submission listener to detect new passwords
+        val detectScript = """
+            (function() {
+                if (window._kalikiPwdListenerAdded) return;
+                window._kalikiPwdListenerAdded = true;
+                document.addEventListener('submit', function(e) {
+                    var form = e.target;
+                    var user = '', pass = '';
+                    var inputs = form.querySelectorAll('input');
+                    for (var i = 0; i < inputs.length; i++) {
+                        var input = inputs[i];
+                        var type = (input.type || '').toLowerCase();
+                        var name = (input.name || input.id || '').toLowerCase();
+                        if (type === 'password' && input.value) { pass = input.value; }
+                        else if ((type === 'email' || type === 'text') && (name.includes('user') || name.includes('email') || name.includes('login') || name.includes('name'))) { user = input.value; }
+                    }
+                    if (user && pass) {
+                        window._kalikiDetectedLogin = {username: user, password: pass};
+                    }
+                }, true);
+            })();
+        """.trimIndent()
+        session.loadUri("javascript:void(${Uri.encode(detectScript)})")
     }
 
     private fun initViews() {
@@ -457,6 +523,10 @@ class MainActivity : AppCompatActivity() {
                 // Inject general ad-block CSS on all pages
                 if (prefsManager.isAdBlockEnabled() && url.isNotEmpty() && !url.startsWith("about:")) {
                     injectGeneralAdBlock(session)
+                }
+                // Inject password autofill on pages with login forms
+                if (!isIncognito && url.isNotEmpty() && !url.startsWith("about:")) {
+                    injectPasswordAutofill(session, url)
                 }
             }
 
@@ -844,12 +914,14 @@ class MainActivity : AppCompatActivity() {
         dialog.behavior.peekHeight = resources.displayMetrics.heightPixels
         dialog.behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
         dialog.behavior.skipCollapsed = true
+        dialog.behavior.isDraggable = false
         val view = layoutInflater.inflate(R.layout.bottom_sheet_tabs, null); dialog.setContentView(view)
         view.findViewById<TextView>(R.id.tabs_count_label).text = "${tabManager.tabs.size} Tabs"
-        view.findViewById<RecyclerView>(R.id.tabs_recycler).apply {
-            layoutManager = androidx.recyclerview.widget.GridLayoutManager(this@MainActivity, 2)
-            adapter = TabAdapter(tabManager.tabs, { idx -> switchToTab(idx); dialog.dismiss() }, { tab -> closeTab(tab); dialog.dismiss() })
-        }
+        val recycler = view.findViewById<RecyclerView>(R.id.tabs_recycler)
+        recycler.layoutManager = LinearLayoutManager(this@MainActivity)
+        val tabAdapter = TabAdapter(tabManager.tabs, { idx -> switchToTab(idx); dialog.dismiss() }, { tab -> closeTab(tab); dialog.dismiss() })
+        recycler.adapter = tabAdapter
+        tabAdapter.attachSwipeToClose(recycler)
         view.findViewById<Button>(R.id.btn_new_tab).setOnClickListener { createNewTab(null); dialog.dismiss() }
         view.findViewById<Button>(R.id.btn_close_all).setOnClickListener { tabManager.tabs.toList().forEach { closeTab(it) }; dialog.dismiss() }
         dialog.show()

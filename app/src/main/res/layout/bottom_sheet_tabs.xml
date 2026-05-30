@@ -14,7 +14,7 @@
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
         android:background="@color/toolbar_bg"
-        android:elevation="2dp">
+        android:elevation="4dp">
 
         <TextView
             android:id="@+id/tabs_count_label"
@@ -39,20 +39,19 @@
             android:id="@+id/btn_new_tab"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
-            android:text="+ New"
+            android:text="+ New Tab"
             android:textSize="12sp"
             android:textColor="@color/white"
             android:backgroundTint="@color/accent"
             android:layout_marginStart="4dp" />
     </LinearLayout>
 
-    <!-- Grid of tabs (2 columns like Chrome) -->
+    <!-- Vertical list of tab cards (Chrome-style) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tabs_recycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingHorizontal="8dp"
         android:paddingTop="8dp"
         android:paddingBottom="16dp"
         android:clipToPadding="false" />
